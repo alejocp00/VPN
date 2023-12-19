@@ -1,15 +1,6 @@
 import socket
 import pandas as pd
 
-# Generar una lista de números
-numeros = [1, 2, 3, 4, 5]
-
-# Crear un DataFrame con los datos
-df = pd.DataFrame(numeros, columns=['Numeros'])
-
-# Exportar los datos a un archivo CSV
-df.to_csv('numeros.csv', index=False)
-
 
 #Crear un socket del tipo TCP
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,16 +17,19 @@ client_socket, client_address = server_socket.accept()
 #Recibiendo peticiones del cliente
 
 client_socket.send("Cual protocolo desea utilizar: TCP (1) , UDP (2)".encode())
-protocol = client_socket.recv(1024)
-if protocol == 1:
+protocol = client_socket.recv(1024).decode()
+
+print(protocol)
+
+if protocol == '1':
     TCP=True
 
 client_socket.send("Introduzca el usuario".encode())
-user = client_socket.recv(1024)
+user = client_socket.recv(1024).decode()
 client_socket.send("Introduzca la contraseña".encode())
-password = client_socket.recv(1024)
+password = client_socket.recv(1024).decode()
 client_socket.send("Introduzca el ip al que se quiere conectar".encode())
-ipNetwork = client_socket.recv(1024)
+ipNetwork = client_socket.recv(1024).decode()
 ipNetwork='localhost'
 
 
