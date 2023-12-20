@@ -24,8 +24,14 @@ def handle_client(client_socket,protocol):
             fake_client_socket.bind(fake_client_address)
             fake_client_socket.connect((ipNetwork,8081))
     
-    except KeyboardInterrupt:
-        # Cerrar la conexión del cliente cuando se recibe la señal de interrupción (Ctrl+C)
+    #esta parte de cerrar el socket del cliente todavia no esta del todo bien ya que cuando se deconecta no cierra el socket pq no es como tal una excepcion
+    except Exception as e:
+        # Cerrar la conexión del cliente cuando se recibe algún error
+        print("Ocurrió un error:", e)
+        print("Cerrando la conexión con el cliente:", client_socket.getpeername())
+    
+    finally:
+    # Cerrar la conexión
         client_socket.close()
 
 
