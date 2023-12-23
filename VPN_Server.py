@@ -2,9 +2,11 @@ import socket
 import threading
 import Functions
 import inspect
+import os
 
 
 def Menu():
+
     print("Seleccione una Operacion:")
     functions = Functions.Functions()
     index = 1
@@ -15,6 +17,11 @@ def Menu():
             index += 1
 
     option = input("> ")
+
+    # Limpiar pantalla
+    
+    os.system('clear')#Linux
+
 
     if option == "1":
         functions.start_server()

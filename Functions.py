@@ -1,8 +1,10 @@
 import socket
 import threading
 
+
 Log=[]
 Socket_list=[]
+Thread_list = []
 
 def handle_client(client_socket,protocol):
 
@@ -11,6 +13,7 @@ def handle_client(client_socket,protocol):
         user = client_socket.recv(1024).decode()
         client_socket.send("Introduzca la contraseña".encode())
         password = client_socket.recv(1024).decode()
+        #aqui poner de que comprobar en la bd si no existe ese usuario mandarle error
         client_socket.send("Introduzca el ip al que se quiere conectar".encode())
         ipNetwork = client_socket.recv(1024).decode()
         ipNetwork='localhost'#sobreescribo con este mientras tanto para en otro momento implementar lo del ipnetwork
@@ -35,7 +38,9 @@ def handle_client(client_socket,protocol):
         
     finally:
     # Cerrar la conexión
-        client_socket.close()
+       client_socket.close()
+       Socket_list.remove(client_socket)
+       Thread_list.remove(threading.current_thread())
 
 
 class Functions:
@@ -62,20 +67,24 @@ class Functions:
                 print(f"Nueva conexión aceptada: {client_address}")#esto se va mas adelante
                 # Agregando a la lista de logs
                 Log.append(f"Nueva conexión aceptada:{client_address}")
+                # Agregando a la lista de sockets
+                Socket_list.append(client_socket)
 
                 # Iniciar un nuevo hilo para manejar la conexión del cliente
-                client_thread = threading.Thread(target=handle_client, args=(client_socket,protocol,))
+                client_thread = threading.Thread(target=handle_client, args=(Socket_list[-1],protocol,))
                 client_thread.start()
+                Thread_list.append(client_thread)
+
 
         except KeyboardInterrupt:
             # Cerrar el socket del servidor cuando se recibe la señal de interrupción (Ctrl+C)
-            server_socket.close()
+            self.stop(server_socket)
 
-    def create_user(user_name, password, email):
+    def create_user(user_name, password):
 
         try:
             # Crea un nuevo usuario en la base de datos
-            #user = User(user_name=user_name, password=password, email=email)
+            #user = User(user_name=user_name, password=password)
             #user.save()
             return True
         except Exception as e:
@@ -120,8 +129,16 @@ class Functions:
         for message in Log:
             print(message)
 
-    # def stop(Protocol_type):
-    #     #a
+    def stop(self,server_socket):
+        for socket in Socket_list:
+            socket.close()
+        Socket_list.clear()
+        for thread in Thread_list:
+            thread.stop()
+        Thread_list.clear()
+        server_socket.close()
+        
+        
 
    
     
