@@ -6,49 +6,37 @@ import os
 
 
 def Menu():
-
-    print("Seleccione una Operacion:")
     functions = Functions.Functions()
-    index = 1
+    method_names = []
+    method_dict = {}
+
     for name, method in inspect.getmembers(functions, inspect.ismethod):
         if not name.startswith("__"):
+            method_names.append(name)
 
+    method_names.sort()
+
+    index = 1
+    for name in method_names:
+        method_dict[str(index)] = name
+        index += 1
+
+    while True:
+        os.system('clear')
+        print("Seleccione una Operacion:")
+
+        for index, name in method_dict.items():
             print(index, name)
-            index += 1
 
-    option = input("> ")
+        option = input("> ")
+        os.system('clear')
 
-    # Limpiar pantalla
-    
-    os.system('clear')#Linux
-
-
-    if option == "1":
-        functions.start_server()
-
-    elif option == "2":
-        functions.create_user()
-
-    elif option == "3":
-        functions.login_user()
-    
-    elif option == "4":
-        functions.restrict_vlan()
-
-    elif option == "5":
-        functions.restrict_user()
-
-    elif option == "6":
-        functions.log()
-
-    elif option == "7":
-        functions.stop()
-    
-    else:
-        print("Opcion no valida")
-        Menu()
-
-
+        if option in method_dict:
+            method_name = method_dict[option]
+            method = getattr(functions, method_name)
+            method()
+        else:
+            print("Opcion no valida")
 
 
 if __name__ == "__main__":
