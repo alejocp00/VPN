@@ -5,7 +5,7 @@ c = conn.cursor()
 
 c.execute("""CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL
         vlanId INTEGER NOT NULL,
         FOREIGN KEY (vlanId) REFERENCES vlans (id)
