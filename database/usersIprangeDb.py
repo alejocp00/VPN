@@ -16,10 +16,18 @@ def select_iprange_by_user(userId):
     conn.close()
     return ipranges
 
-def delete_vlan(userId, ipRangeId):
+def delete_userIprange(userId, ipRangeId):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
     c.execute("DELETE FROM users_iprange WHERE userId=? AND iprangeId=?", (userId, ipRangeId)
+              )
+    conn.commit()
+    conn.close()
+
+def delete_all_iprange(userId):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM users_iprange WHERE userId=?", (userId,)
               )
     conn.commit()
     conn.close()
