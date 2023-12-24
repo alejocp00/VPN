@@ -15,11 +15,9 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
           
 c.execute("""CREATE TABLE IF NOT EXISTS vlans(
         id INTEGER PRIMARY KEY,
-        ipNetwork VARCHAR, 
+        network VARCHAR, 
         mask VARCHAR
 ) """)
-          
-          # ToDo: arreglar atributos de la vlan 
           
 c.execute("""CREATE TABLE IF NOT EXISTS iprange(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
