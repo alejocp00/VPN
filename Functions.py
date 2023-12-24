@@ -3,13 +3,21 @@ import threading
 import time
 import os
 
-Log=[]
-Socket_list=[]
-Thread_list = []
-stop_printing = False
-stop_printing_lock = threading.Lock()
+# Variables globales
+
+Log=[] #Historial de lo que ha pasado en el servidor
+Socket_list=[] #Lista de sockets abiertos
+Thread_list = [] #Lista de hilos abiertos
+flag_stop=False #Bandera para indicar que el servidor se va a cerrar
+stop_printing = False #Bandera para indicar que se va a dejar de imprimir el historial
+stop_printing_lock = threading.Lock() #Lock para la bandera stop_printing
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Socket del servidor
+
+# Metodo Auxiliar para logear y conectar a los clientes(por ahora no se utilizan los nombres de usuarios y contrasena)
 
 def handle_client(client_socket,protocol):
+
+    #while not flag_stop:   #esto mas adelante va a ser para cuando el servidor cierre indicarle a todos los clientes cerrar el proceso
 
     try:
         client_socket.send("Introduzca el usuario".encode())
@@ -33,7 +41,6 @@ def handle_client(client_socket,protocol):
             fake_client_socket.bind(fake_client_address)
             fake_client_socket.connect((ipNetwork,8081))
         
-    #esta parte de cerrar el socket del cliente todavia no esta del todo bien ya que cuando se deconecta no cierra el socket pq no es como tal una excepcion
     except Exception as e:
         # Cerrar la conexión del cliente cuando se recibe algún error
         Log.append(f"Ocurrió un error:{e}")
@@ -45,16 +52,17 @@ def handle_client(client_socket,protocol):
        Socket_list.remove(client_socket)
        Thread_list.remove(threading.current_thread())
 
+# Metodo Auxiliar para manejar las solicitudes de los clientes
+
 def server_process(server_socket,protocol):
     try:
-            while True:
+            while not flag_stop:
                 # Aceptar la conexión entrante
                 client_socket, client_address = server_socket.accept()
                 # Agregando a la lista de logs
                 Log.append(f"Nueva conexión aceptada:{client_address}")
                 # Agregando a la lista de sockets
                 Socket_list.append(client_socket)
-
                 # Iniciar un nuevo hilo para manejar la conexión del cliente
                 client_thread = threading.Thread(target=handle_client, args=(Socket_list[-1],protocol,))
                 client_thread.start()
@@ -63,7 +71,9 @@ def server_process(server_socket,protocol):
 
     except KeyboardInterrupt:
         # Cerrar el socket del servidor cuando se recibe la señal de interrupción (Ctrl+C)
-        Functions.stop(server_socket)
+        Functions.stop()
+
+# Metodo para imprimir los logs
 
 def print_log():
     global stop_printing
@@ -77,12 +87,16 @@ def print_log():
 
         for log in Log:
             print(log)
-        time.sleep(1)
+        time.sleep(2)
+
+
+# Funciones principales del VPN
 
 class Functions:
 
     def start_server(self):
         # Crear un socket del tipo TCP
+        global server_socket
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Definir la dirección y el puerto en el que el servidor escuchará
         server_address = ("localhost", 8080)
@@ -106,7 +120,7 @@ class Functions:
         server_thread.start()
         Thread_list.append(server_thread)
 
-        
+    # Bases de Metodos todavia no implementados 
 
     # def create_user(user_name, password):
 
@@ -155,6 +169,7 @@ class Functions:
         
     def log(self):
         global stop_printing # Variable global para detener el hilo de impresión
+
         # Crear e iniciar el hilo de impresión
         print_thread = threading.Thread(target=print_log)
         print_thread.start()
@@ -163,19 +178,36 @@ class Functions:
             option = input("> ")
             if option == "b":
                 with stop_printing_lock:
-                    stop_printing = True # Establecer la bandera de control para detener el hilo
+                    stop_printing = True # Establecer la flag de control para detener el hilo
                 
                 print_thread.join()  # Esperar a que el hilo termine antes de retornar
                 return
 
-    def stop(self,server_socket):
+    def stop(self):
+
+        # variables globales que se van a modificar
+        global flag_stop
+        global server_socket
+
+        # Cerrar todos los sockets
         for socket in Socket_list:
             socket.close()
         Socket_list.clear()
+
+        # Indicar que se detengan todos los procesos de los hilos de los clientes y servidor
+        flag_stop=True
         server_socket.close()
-        for thread in Thread_list:
-            thread.stop()
+
+        # Esperar a que todos los hilos terminen
+        # Esta parte la tengo comentada porque el join da problemas
+        print("va a empezar a esperar")
+        # for thread in Thread_list:
+        #     thread.join()
         Thread_list.clear()
+        print("ya termino de esperar")
+
+        # Reestablecer la flag de control
+        flag_stop=False
         
         
         

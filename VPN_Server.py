@@ -6,6 +6,8 @@ import os
 
 
 def Menu():
+
+    # Recopilando los nombres de los metodos de la clase Functions
     functions = Functions.Functions()
     method_names = []
     method_dict = {}
@@ -13,8 +15,6 @@ def Menu():
     for name, method in inspect.getmembers(functions, inspect.ismethod):
         if not name.startswith("__"):
             method_names.append(name)
-
-    method_names.sort()
 
     index = 1
     for name in method_names:
@@ -25,11 +25,15 @@ def Menu():
         os.system('clear')
         print("Seleccione una Operacion:")
 
+        # Imprimiendo las opciones del menu
+
         for index, name in method_dict.items():
             print(index, name)
 
         option = input("> ")
         os.system('clear')
+
+        # Para llamar a la funcion correspondiente
 
         if option in method_dict:
             method_name = method_dict[option]
@@ -40,5 +44,4 @@ def Menu():
 
 
 if __name__ == "__main__":
-    print("Bienvenido al servidor VPN")
     Menu()
