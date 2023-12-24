@@ -55,3 +55,18 @@ class Client:
             return self.get_password()
 
         return password
+
+    def create_socket(self):
+        """Create the client socket."""
+        # Todo: Implement this method
+        pass
+
+    def connect_to_server(self):
+        """Connect to the server."""
+        # Todo: Implement this method
+        pass
+
+    def execute_function(self, *args):
+        """Execute the client function."""
+        # Todo: Implement this method
+        pass
