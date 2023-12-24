@@ -19,7 +19,7 @@ try:
             client_socket.send(message.encode())
 
 except Exception as e:
-    print("Ocurrió un error:", e)
+    print("Ha ocurrido un error al recibir:", e)
 
 finally:
     # Cerrar la conexión
