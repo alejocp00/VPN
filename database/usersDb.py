@@ -3,8 +3,8 @@ import sqlite3
 def insert_user(user, ip):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("INSERT INTO users (name, password, vlanId, ipId) VALUES (?, ?, ?, ?)",
-              (user.name, user.password, user.vlan, ip))
+    c.execute("INSERT INTO users (id, name, password, vlanId, ipId) VALUES (?, ?, ?, ?)",
+              (user.id, user.name, user.password, user.vlan, ip))
     conn.commit()
     conn.close()
 

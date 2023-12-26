@@ -4,7 +4,7 @@ conn = sqlite3.connect('vpn.db') #create connection with db
 c = conn.cursor()
 
 c.execute("""CREATE TABLE IF NOT EXISTS users(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         name TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         vlanId INTEGER NOT NULL,
