@@ -1,10 +1,10 @@
 import sqlite3
 
 def insert_vlan(vlan):
-    conn = sqlite3.connect('vpn.db')
+    conn = sqlite3.connect('./vpn.db')
     c = conn.cursor()
-    c.execute("INSERT INTO vlans VALUES (?, ?)",
-              vlan.network, vlan.mask)
+    c.execute("INSERT INTO vlans VALUES (?, ?, ?)",
+              (vlan.id, vlan.network, vlan.mask))
     conn.commit()
     conn.close()
 

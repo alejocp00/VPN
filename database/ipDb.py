@@ -1,10 +1,10 @@
 import sqlite3
 
-def insert_ip(ip):
+def insert_ip(ip, vlanId):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("INSERT INTO ips VALUES (?,)",
-              (ip,))
+    c.execute("INSERT INTO ips (ip, vlanId) VALUES (?, ?)",
+              (ip, vlanId))
     conn.commit()
     conn.close()
 

@@ -4,7 +4,7 @@ def insert_vlanIprange(vlanId, ipRangeId):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
     c.execute("INSERT INTO vlans_iprange VALUES (?, ?)",
-              vlanId, ipRangeId)
+              (vlanId, ipRangeId))
     conn.commit()
     conn.close()
 
