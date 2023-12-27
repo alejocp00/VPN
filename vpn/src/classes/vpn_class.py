@@ -1,4 +1,5 @@
 from common.common_variables import *
+from common.protocols.my_socket import MySocket
 from common.screen_utils import *
 
 
@@ -7,29 +8,27 @@ class MyVPN:
         # Todo: Add the code to initialize the class
         self.is_running = False
         self.protocol = VPNProtocol.UNKNOWN
-        self.port = None
-        self.ip = None
+        self.port = VPN_SERVER_PORT
+        self.ip = VPN_SERVER_IP
+        self.__socket = None
+        self.process_flags = {
+            "log": False,
+        }
         pass
 
-    def __start_server(self):
-        """Start the server."""
-        # Todo: Add the code to start the server
+    def __create_socket(self):
+        "This method create the vpn server socket"
+        # Todo: Implement create socket
         pass
 
-    def __create_client(self):
-        """Create a client."""
-        # Todo: Add the code to create a client
-
+    def __activate_socket(self):
+        "This method activate the vpn server socket, and bind it to an specific address"
+        # Todo: Implement activate socket
         pass
 
-    def __restrict_vlan(self):
-        """Restrict VLAN."""
-        # Todo: Add the code to restrict VLAN
-        pass
-
-    def __restrict_user(self):
-        """Restrict User."""
-        # Todo: Add the code to restrict User
+    def __run_server(self):
+        "This method create a thread with the server process attached to it"
+        # Todo: implement run server
         pass
 
     def __show_log(self):
@@ -41,6 +40,10 @@ class MyVPN:
         """Stop the server."""
         # Todo: Add the code to stop the server
         pass
+
+    #########
+    # MENUS #
+    #########
 
     def menu(self):
         """Show the menu."""
@@ -68,20 +71,70 @@ class MyVPN:
         selected_option = input("Option: ")
 
         while selected_option not in [str(i) for i in range(1, len(options) + 1)]:
-            clear_screen()
             self.menu()
 
         if selected_option == "1":
-            self.__start_server()
+            self.__start_server_menu()
         elif selected_option == "2":
-            self.__create_client()
+            self.__create_client_menu()
         elif selected_option == "3":
-            self.__restrict_vlan()
+            self.__restrict_vlan_menu()
         elif selected_option == "4":
-            self.__restrict_user()
+            self.__restrict_user_menu()
         elif selected_option == "5":
             self.__show_log()
         elif selected_option == "6":
             self.__stop_server()
         else:
             self.menu()
+
+    def __start_server_menu(self):
+        """Start the server."""
+
+        # Options to select
+        options = ["1. use_tcp", "2. use_udp"]
+
+        # Cleaning the screen
+        clear_screen()
+
+        # Showing select text
+        print("Select a protocol to use.")
+
+        # Printing options
+        print("\n".join(options))
+
+        selected_option = input("Option: ")
+
+        # Capture back option
+        if selected_option == "b":
+            self.menu()
+
+        if selected_option not in [str(i) for i in range(1, len(options) + 1)]:
+            self.__start_server_menu()
+
+        # Update protocol server
+        self.protocol = VPNProtocol.TCP if selected_option == 1 else VPNProtocol.UDP
+
+        # Create socket
+        self.__create_socket()
+
+        # Activate socket
+        self.__activate_socket()
+
+        # Create process thread
+        self.__run_server()
+
+    def __create_client_menu(self):
+        """Create a client."""
+        # Todo: Add the code to create a client
+        pass
+
+    def __restrict_vlan_menu(self):
+        """Restrict VLAN."""
+        # Todo: Add the code to restrict VLAN
+        pass
+
+    def __restrict_user_menu(self):
+        """Restrict User."""
+        # Todo: Add the code to restrict User
+        pass
