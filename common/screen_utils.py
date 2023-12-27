@@ -49,17 +49,18 @@ def get_password(repeat=False):
     return password
 
 
-def get_vlan_id():
-    """Ask the user for a VLAN ID"""
+def get_id(isUser=False):
+    """Ask the user for a VLAN or User ID"""
 
     clear_screen()
+    objective = "user" if isUser else "VLAN"
 
     # Fix: Diana, arregla este inglés
     # Ask a number to the user
-    number = input("Enter the VLAN id: ")
+    number = input(f"Enter the {objective} id: ")
 
     if not number.isnumeric():
-        get_vlan_id()
+        get_id()
 
     return int(number)
 
@@ -86,6 +87,10 @@ def get_ip_range():
             for c in octant:
                 if not c.isnumeric():
                     get_ip_range()
+            # Check if it is 0<=x<256
+            if int(octant) < 0 or int(octant) > 255:
+                get_ip_range()
+
         # Check if the octant have an x
         elif not octant.lower() == "x":
             get_ip_range()
