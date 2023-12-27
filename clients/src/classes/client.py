@@ -1,25 +1,34 @@
+from abc import ABCMeta, abstractmethod
 from common.common_variables import *
 from utils.screen_utils import *
 
 
-class Client:
-    def __init__(self, function):
-        self.client_function = function
+class Client(metaclass=ABCMeta):
+    def __init__(self):
         self.ip = None
         self.port = None
-        self.socket = None
-        self.protocol = (
-            vpn_protocol if vpn_protocol != VPNProtocol.UNKNOWN else VPNProtocol.TCP
-        )
+        self.__socket = None
+        self.protocol = VPNProtocol.UNKNOWN
+        self._user_name = None
+        self.__password = None
 
     def connect(self):
         """Connect to the server."""
         # Get the user information
-        user_name = self.get_user_name()
-        password = self.get_password()
+        self._user_name = (
+            self.get_user_name() if not self._user_name else self._user_name
+        )
+        self.__password = (
+            self.get_password() if not self.__password else self.__password
+        )
 
-        # Create the client socket
-        self.create_socket()
+        # Connect to the server
+        self.protocol = self.get_vpn_protocol()
+
+        # Stop connection if the protocol is unknown
+        if self.protocol == VPNProtocol.UNKNOWN:
+            # Todo: Informar que no se ha conectado al servidor
+            return
 
         # Connect to the server
         self.connect_to_server()
@@ -66,7 +75,12 @@ class Client:
         # Todo: Implement this method
         pass
 
-    def execute_function(self, *args):
-        """Execute the client function."""
+    def get_vpn_protocol(self):
+        """Get the VPN protocol."""
         # Todo: Implement this method
+        pass
+
+    @abstractmethod
+    def execute_function(self, d_ip, d_port, *args):
+        """Execute the client function."""
         pass
