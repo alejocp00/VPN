@@ -6,6 +6,7 @@ class VPNStatus(enum.Enum):
 
     IDLE = 0
     RUNNING = 1
+    SHUTING_DOWN = 2
 
 
 class ProcessStatus(enum.Enum):
