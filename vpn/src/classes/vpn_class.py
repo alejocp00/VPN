@@ -1,6 +1,11 @@
+import socket
+import threading
 from common.common_variables import *
 from common.protocols.my_socket import MySocket
 from common.screen_utils import *
+from vpn.src.classes.log_manager import LogManager
+from vpn.src.classes.socket_manager import SocketManager
+from vpn.src.classes.threads_manager import ThreadManager
 
 
 class MyVPN:
@@ -11,10 +16,11 @@ class MyVPN:
         self.port = VPN_SERVER_PORT
         self.ip = VPN_SERVER_IP
         self.__socket = None
-        self.process_flags = {
-            "log": False,
-        }
-        pass
+        self.__process_flags = {}
+        self.__thread_manager = ThreadManager()
+        self.__socket_manager = SocketManager()
+        self.__log_manager = LogManager()
+        self.__vpn_status = VPNStatus.IDLE
 
     def __create_socket(self):
         "This method create the vpn server socket"
@@ -33,13 +39,48 @@ class MyVPN:
 
     def __show_log(self):
         """Show the log."""
-        # Todo: Add the code to show the log
-        pass
+
+        clear_screen()
+
+        stop_flag = False
+
+        # Log tex print process
+        def print_text():
+            log_text = []
+            while not stop_flag:
+                if self.__log_manager.new_logs():
+                    clear_screen()
+                    log_text = self.__log_manager.get_logs()
+
+        # Create the thread
+        print_thread = threading.Thread(target=print_text)
+        print_thread.start()
+
+        # Wait for the back signal
+        while input() != "b":
+            continue
+
+        stop_flag = True
+
+        print_thread.join()
+
+        return self.menu()
 
     def __stop_server(self):
         """Stop the server."""
-        # Todo: Add the code to stop the server
-        pass
+
+        # Set the vpn status
+        self.__vpn_status = VPNStatus.SHUTING_DOWN
+
+        # Close all sockets
+        self.__socket_manager.clear()
+
+        # Close Threads
+        self.__thread_manager.dying_light(True)
+
+        self.__vpn_status = VPNStatus.IDLE
+
+        self.menu
 
     #########
     # MENUS #
@@ -47,6 +88,7 @@ class MyVPN:
 
     def menu(self):
         """Show the menu."""
+        # Todo: VPN menu as while true
 
         clear_screen()
 
@@ -124,17 +166,51 @@ class MyVPN:
         # Create process thread
         self.__run_server()
 
+        # Set status
+        self.__vpn_status = VPNStatus.RUNNING
+
     def __create_client_menu(self):
         """Create a client."""
-        # Todo: Add the code to create a client
-        pass
+
+        # Get client data
+        client_user_name = get_user_name()
+        client_password = get_password()
+
+        # Get VLAN
+        vlan_temporal = get_id
+
+        # Todo: Check for vlan, and user
+
+        # Todo: Add user to the database
+
+        self.menu()
 
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
-        # Todo: Add the code to restrict VLAN
-        pass
+
+        # Get vlan info
+        vlan_temporal = get_id()
+
+        # Todo:  check if vlan exist
+        ip_range = get_ip_range()
+
+        # Todo: Add to database
+
+        self.menu()
 
     def __restrict_user_menu(self):
         """Restrict User."""
-        # Todo: Add the code to restrict User
-        pass
+
+        # Get user id
+        user_id = get_id(True)
+
+        # Todo: Check if user id is correct
+
+        # Get vlan id
+        vlan_id = get_id(False)
+
+        # Todo: Check if vlan id is correct
+
+        # Todo: Add it to database
+
+        return self.menu()
