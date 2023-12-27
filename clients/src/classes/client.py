@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from ctypes import util
 from tkinter import Menu
 from common.common_variables import *
-from utils.screen_utils import *
+from common.screen_utils import *
 
 
 class Client(metaclass=ABCMeta):
