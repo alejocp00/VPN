@@ -47,3 +47,47 @@ def get_password(repeat=False):
         return get_password()
 
     return password
+
+
+def get_vlan_id():
+    """Ask the user for a VLAN ID"""
+
+    clear_screen()
+
+    # Fix: Diana, arregla este inglés
+    # Ask a number to the user
+    number = input("Enter the VLAN id: ")
+
+    if not number.isnumeric():
+        get_vlan_id()
+
+    return int(number)
+
+
+def get_ip_range():
+    """Ask a ip range to the user"""
+
+    clear_screen()
+
+    ip_range = input("Enter a valid ip range: ")
+
+    if not ip_range or ip_range == "":
+        get_ip_range()
+
+    # Check if the range is valid
+    octants = ip_range.split(".")
+
+    if octants.count != 4:
+        get_ip_range()
+
+    for octant in octants:
+        # Check if all chars of the octant are numbers
+        if octant.isnumeric():
+            for c in octant:
+                if not c.isnumeric():
+                    get_ip_range()
+        # Check if the octant have an x
+        elif not octant.lower() == "x":
+            get_ip_range()
+
+    return ip_range
