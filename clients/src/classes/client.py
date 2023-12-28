@@ -21,12 +21,8 @@ class Client(metaclass=ABCMeta):
     def connect(self):
         """Connect to the server."""
         # Get the user information
-        self._user_name = (
-            self.__get_user_name() if not self._user_name else self._user_name
-        )
-        self.__password = (
-            self.__get_password() if not self.__password else self.__password
-        )
+        self._user_name = get_user_name() if not self._user_name else self._user_name
+        self.__password = get_password() if not self.__password else self.__password
 
         # Perform first connection with the vpn
         received_data = self.__perform_first_connection()
@@ -36,38 +32,6 @@ class Client(metaclass=ABCMeta):
 
         # Connect to the server
         self._connect_to_server()
-
-    def __get_user_name(self):
-        """Get the user name."""
-
-        clear_screen()
-
-        user_name = input("User name: ")
-
-        # Check if the user name is valid
-        if not user_name:
-            print("The user name is required.")
-            return self.__get_user_name()
-
-        # Check if the user name was correctly entered
-        if "y" != input(f"Is {user_name} correct? (y/n): "):
-            return self.__get_user_name()
-
-        return user_name
-
-    def __get_password(self):
-        """Get the password."""
-
-        clear_screen()
-
-        password = input("Password: ")
-
-        # Check if the password is valid
-        if not password:
-            print("The password is required.")
-            return self.__get_password()
-
-        return password
 
     def _create_socket(self):
         """Create the client socket."""
