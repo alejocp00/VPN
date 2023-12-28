@@ -55,8 +55,7 @@ def get_id(isUser=False):
     clear_screen()
     objective = "user" if isUser else "VLAN"
 
-    # Fix: Diana, arregla este inglés
-    # Ask a number to the user
+    # Ask the user for a number
     number = input(f"Enter the {objective} id: ")
 
     if not number.isnumeric():
