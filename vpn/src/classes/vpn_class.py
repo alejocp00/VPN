@@ -26,22 +26,18 @@ class MyVPN:
 
     def __create_socket(self):
         "This method create the vpn server socket"
-        # Todo: Correctly implement create socket
         if self.protocol == VPNProtocol.TCP:
             self.__socket = MyTCP()
-        elif self.protocol == VPNProtocol.UDP:
-            self.__socket = MyUDP()
         else:
-            raise Exception("Protocol not supported")
+            self.__socket = MyUDP()
 
     def __activate_socket(self):
         "This method activate the vpn server socket, and bind it to an specific address"
-        # Todo: Correctly implement activate socket
+        self.__socket.bind(self.ip, self.port)
         pass
 
     def __run_server(self):
         "This method create a thread with the server process attached to it"
-        # Todo: Correctly implement run server
         server_thread = threading.Thread(target=self.__server_process)
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
