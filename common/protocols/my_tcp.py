@@ -5,7 +5,6 @@ class MyTCP:
         # Todo: Add the code to initialize the class
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-        pass
 
     def bind(self, ip, port):
         self.socket.bind((ip, port))

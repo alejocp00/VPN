@@ -34,7 +34,7 @@ class MyVPN:
     def __activate_socket(self):
         "This method activate the vpn server socket, and bind it to an specific address"
         self.__socket.bind(self.ip, self.port)
-        pass
+        self.__socket.listen()
 
     def __run_server(self):
         "This method create a thread with the server process attached to it"
@@ -44,54 +44,94 @@ class MyVPN:
 
     def __server_process(self):
         "This method is the main process of the server, it will be running until the server is stopped"
-        # Todo: Correctly implement server process
-        # while self.__vpn_status == VPNStatus.RUNNING:
-        #     # Accept a connection
-        #     client_socket, client_address = self.__socket.accept()
+        while self.__vpn_status == VPNStatus.RUNNING:
+            # Accept a connection
+            client_socket, client_address = self.__socket.accept()
 
-        #     # Add the socket to the socket manager
-        #     self.__socket_manager.add_socket(client_socket, client_address)
+            # Add the socket to the socket manager
+            self.__socket_manager.add_socket(client_socket, client_address)
 
-        #     # Add to log
-        #     self.__log_manager.add_log("New connection from: " + str(client_address))
+            # Add to log
+            self.__log_manager.add_log("New connection from: " + str(client_address))
 
-        #     # Create a thread to handle the client
-        #     client_thread = threading.Thread(
-        #         target=self.__client_process, args=(client_socket, client_address)
-        #     )
-        #     client_thread.start()
+            ############################ NEW
 
-        #     # Add the thread to the thread manager
-        #     self.__thread_manager.add_thread(client_thread)
+            # Aqui deberia ir un Metodo para ponerle la ip falsa y para conectarlo al servidor objetivo
+
+            self.__fake_socket(client_socket, client_address,ip_server, port_server)
+
+            ############################
+
+            # Create a thread to handle the client
+            client_thread = threading.Thread(
+                target=self.__client_process, args=(client_socket, client_address)# Aqui deberia tratar al cliente falso con el real
+            )
+            client_thread.start()
+
+            # Add the thread to the thread manager
+            self.__thread_manager.add_thread(client_thread)
+
+    
+    ############################# NEW
+
+    def __fake_socket(self, client_socket, client_address, ip_server, port_server):
+        "This method create a fake socket for the client"
+
+        # Create a fake socket
+        fake_socket = MySocket()
+
+        # Bind the fake socket to the fake ip
+
+        fake_socket.bind(self.__fake_ip(client_address), 0)
+
+        # Connect the fake socket to the server
+        fake_socket.connect(ip_server, port_server)
+
+        # Add the fake socket to the socket manager
+
+        self.__socket_manager.add_socket(fake_socket, ip_server)
+
+
+    def __fake_ip(self, client_address):
+        "This method create a fake ip for the client"
+        # Create a fake ip
         pass
+
+    #############################
+
+
+
 
     def __client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
-        # Todo: Correctly implement client process
-        # while self.__vpn_status == VPNStatus.RUNNING:
-        #     # Receive the data
-        #     data = client_socket.recv(1024)
+        
+        while self.__vpn_status == VPNStatus.RUNNING:
+            # Receive the data
+            data = client_socket.recv(1024)
 
-        #     # If the client is disconnected
-        #     if not data:
-        #         break
+            # If the client is disconnected
+            if not data:
+                break
 
-        #     # Process the data
-        #     self.__process_data(data)
+            # Process the data
+            self.__process_data(data)
 
-        # # Close the socket
-        # client_socket.close()
+        # Close the socket
+        client_socket.close()
 
-        # # Remove the socket from the socket manager
-        # self.__socket_manager.remove_socket(client_socket)
+        # Add to log
 
-        # # Remove the thread from the thread manager
-        # self.__thread_manager.remove_thread(threading.current_thread())
-        pass
+        self.__log_manager.add_log("Connection closed with: " + str(client_address))
+
+        # Remove the socket from the socket manager
+        self.__socket_manager.remove_socket(client_socket)
+
+        # Remove the thread from the thread manager
+        self.__thread_manager.remove_thread(threading.current_thread())
 
     def __process_data(self, data):
         "This method process the data received from the client"
-        # Todo: Is this necessary?
+        # Todo: Is this necessary? R/por ahora no,pero lo mas posible es que si
         pass
 
     def __show_log(self):
