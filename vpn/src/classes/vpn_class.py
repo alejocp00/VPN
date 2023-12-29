@@ -2,6 +2,8 @@ import socket
 import threading
 from common.common_variables import *
 from common.protocols.my_socket import MySocket
+from common.protocols.my_tcp import MyTCP
+from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
 from vpn.src.classes.log_manager import LogManager
 from vpn.src.classes.socket_manager import SocketManager
@@ -26,9 +28,9 @@ class MyVPN:
         "This method create the vpn server socket"
         # Todo: Correctly implement create socket
         if self.protocol == VPNProtocol.TCP:
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__socket = MyTCP()
         elif self.protocol == VPNProtocol.UDP:
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.__socket = MyUDP()
         else:
             raise Exception("Protocol not supported")
 
