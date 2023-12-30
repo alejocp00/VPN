@@ -17,6 +17,7 @@ class Server(metaclass=ABCMeta):
         }
         self.__thread_manager = ThreadManager()
         self.__socket_manager = SocketManager()
+        self.__vpn_status = VPNStatus.IDLE
 
     def _start_server(self):
         """ Activate the server."""
@@ -34,36 +35,47 @@ class Server(metaclass=ABCMeta):
         server_thread = threading.Thread(target=self._wait_for_connection)
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
-       
-
 
     def _wait_for_connection(self):
-        while True:
-            # Wait for a connection
-            self.__connection, self.__client_address = self.__socket.accept()
+        """ Wait for a connection from a client."""
 
+        while self.__vpn_status == VPNStatus.RUNNING:
 
+            client_socket, client_address = self.__socket.accept()
 
-            self._recieve_data()
+            # Add the socket to the socket manager
+            self.__socket_manager.add_socket(client_socket, client_address)
 
-            # Close the connection
-            self.__connection.close()
+            # Create a thread to handle the client
+            client_thread = threading.Thread(
+                target=self._recieve_data , args=(client_socket, client_address)
+            )
+            client_thread.start()
+            self.__thread_manager.add_thread(client_thread, "client")
 
-
-    def _recieve_data(self):
+    def _recieve_data(self, client_socket, client_address):
 
         """ Recieve data from the client."""
 
         # Receive the data in small chunks and retransmit it
-        while True:
-            data = self.__connection.recv(16)
+        while self.__vpn_status == VPNStatus.RUNNING:
+            data = client_socket.recv(16)
             print('received {!r}'.format(data))
             if data:
                 print('sending data back to the client')
-                self.__connection.sendall(data)
+                client_socket.sendall(data)
             else:
-                print('no data from', self.__client_address)
+                print('no data from', client_address)
                 break
+        
+        # Close the connection
+        client_socket.close()
+
+        # Remove the socket from the socket manager
+        self.__socket_manager.remove_socket(client_socket)
+
+        # Remove the thread from the thread manager
+        self.__thread_manager.remove_thread(threading.current_thread())
 
     def _create_socket(self):
         """Create the server socket."""
@@ -76,7 +88,19 @@ class Server(metaclass=ABCMeta):
 
     def _stop_server (self):
         """ Stop the server."""
-        self.__socket.close()
+
+        # Set the vpn status
+        self.__vpn_status = VPNStatus.SHUTING_DOWN
+
+        # Close all sockets
+        self.__socket_manager.clear()
+
+        # Close Threads
+        self.__thread_manager.dying_light(True)
+
+        self.__vpn_status = VPNStatus.IDLE
+
+        self.menu
 
 
     def menu(self):
