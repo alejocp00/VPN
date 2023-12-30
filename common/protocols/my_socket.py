@@ -10,11 +10,6 @@ class MySocket(metaclass=ABCMeta):
         # Todo: Implement
         pass
 
-    def send(self):
-        # Todo:implement close socket function
-        pass
-
-
     def close(self):
         # Todo:implement close socket function
         self._socket.close()
