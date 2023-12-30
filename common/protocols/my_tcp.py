@@ -1,8 +1,9 @@
 
-import my_socket
+from common.protocols.my_socket import MySocket
+import socket
 
 
-class MyTCP(my_socket.MySocket):
+class MyTCP(MySocket):
 
     def __init__(self, sock=None):
         # Todo: Add the code to initialize the class
