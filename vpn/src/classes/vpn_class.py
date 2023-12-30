@@ -54,17 +54,9 @@ class MyVPN:
             # Add to log
             self.__log_manager.add_log("New connection from: " + str(client_address))
 
-            ############################ NEW
-
-            # Aqui deberia ir un Metodo para ponerle la ip falsa y para conectarlo al servidor objetivo
-
-            self.__fake_socket(client_socket, client_address,ip_server, port_server)
-
-            ############################
-
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__client_process, args=(client_socket, client_address)# Aqui deberia tratar al cliente falso con el real
+                target=self.__client_process, args=(client_socket, client_address)
             )
             client_thread.start()
 
@@ -72,38 +64,56 @@ class MyVPN:
             self.__thread_manager.add_thread(client_thread)
 
     
-    ############################# NEW
+    # region new
 
     def __fake_socket(self, client_socket, client_address, ip_server, port_server):
+
         "This method create a fake socket for the client"
 
+        fake_socket = None
         # Create a fake socket
-        fake_socket = MySocket()
+        if self.protocol == VPNProtocol.TCP:
+            fake_socket = MyTCP()
+        else:
+            fake_socket = MyUDP()
 
-        # Bind the fake socket to the fake ip
+        # Get the fake ip and port
 
-        fake_socket.bind(self.__fake_ip(client_address), 0)
+        fake_ip, fake_port = self.__fake_ip(client_address)
+
+        # Bind the fake socket to the fake ip and port
+
+        fake_socket.bind(fake_ip, fake_port)
 
         # Connect the fake socket to the server
+
         fake_socket.connect(ip_server, port_server)
 
         # Add the fake socket to the socket manager
 
         self.__socket_manager.add_socket(fake_socket, ip_server)
 
+        # Return the fake socket
+
+        return fake_socket
+
 
     def __fake_ip(self, client_address):
-        "This method create a fake ip for the client"
-        # Create a fake ip
+        "This method extract the client fake ip and port"
+        # Todo: Extract the client fake ip and port from the database
         pass
 
-    #############################
-
-
+    # endregion
 
 
     def __client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
+
+        # region new
+
+        client_socket = self.__fake_socket(client_socket, client_address,ip_server, port_server)
+
+        # endregion
         
         while self.__vpn_status == VPNStatus.RUNNING:
             # Receive the data
