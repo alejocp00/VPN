@@ -63,10 +63,7 @@ class MyVPN:
             # Add the thread to the thread manager
             self.__thread_manager.add_thread(client_thread)
 
-    
-    # region new
-
-    def __fake_socket(self, client_socket, client_address, ip_server, port_server):
+    def __create_fake_socket(self, client_address, ip_server, port_server):
 
         "This method create a fake socket for the client"
 
@@ -79,7 +76,7 @@ class MyVPN:
 
         # Get the fake ip and port
 
-        fake_ip = self.__fake_ip(client_address)
+        fake_ip = self.__extract_fake_ip(client_address)
 
         # Bind the fake socket to the fake ip and port
 
@@ -89,38 +86,33 @@ class MyVPN:
 
         fake_socket.connect(ip_server, port_server)
 
-        # Add the fake socket to the socket manager
-
-        self.__socket_manager.add_socket(fake_socket, ip_server)
-
         # Return the fake socket
 
         return fake_socket
 
 
-    def __fake_ip(self, client_address):
+    def __extract_fake_ip(self, client_address):
         "This method extract the client fake ip and port"
         # Todo: Extract the client fake ip and port from the database
         pass
 
-    # endregion
 
 
     def __client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # region new
+        # fix: ip_server and port_server
 
-        # fix ip_server and port_server
+        fake_client_socket = self.__create_fake_socket(client_address,ip_server, port_server)
 
-        fake_client_socket = self.__fake_socket(client_socket, client_address,ip_server, port_server)
+        # Add the fake socket to the socket manager
 
-        # endregion
+        self.__socket_manager.add_socket(fake_client_socket)
         
         while self.__vpn_status == VPNStatus.RUNNING:
 
-            # fix: implement correct send and recv
-            
+            # fix: implement correctly send and recv
+
             # Receive the data
             data = client_socket.recv(1024)
 
