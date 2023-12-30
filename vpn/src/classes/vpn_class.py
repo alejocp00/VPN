@@ -79,11 +79,11 @@ class MyVPN:
 
         # Get the fake ip and port
 
-        fake_ip, fake_port = self.__fake_ip(client_address)
+        fake_ip = self.__fake_ip(client_address)
 
         # Bind the fake socket to the fake ip and port
 
-        fake_socket.bind(fake_ip, fake_port)
+        fake_socket.bind(fake_ip, 0) # 0 means auto assign port
 
         # Connect the fake socket to the server
 
@@ -111,11 +111,16 @@ class MyVPN:
 
         # region new
 
-        client_socket = self.__fake_socket(client_socket, client_address,ip_server, port_server)
+        # fix ip_server and port_server
+
+        fake_client_socket = self.__fake_socket(client_socket, client_address,ip_server, port_server)
 
         # endregion
         
         while self.__vpn_status == VPNStatus.RUNNING:
+
+            # fix: implement correct send and recv
+            
             # Receive the data
             data = client_socket.recv(1024)
 
@@ -128,13 +133,14 @@ class MyVPN:
 
         # Close the socket
         client_socket.close()
+        fake_client_socket.close()
 
         # Add to log
-
         self.__log_manager.add_log("Connection closed with: " + str(client_address))
 
         # Remove the socket from the socket manager
         self.__socket_manager.remove_socket(client_socket)
+        self.__socket_manager.remove_socket(fake_client_socket)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())

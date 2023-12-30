@@ -12,3 +12,7 @@ class SocketManager:
         for socket in self.__sockets:
             socket.close()
         self.__sockets = {}
+
+    def remove_socket(self, socket: my_socket.MySocket):
+        if socket in self.__sockets:
+            del self.__sockets[socket]
