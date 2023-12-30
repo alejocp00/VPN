@@ -2,6 +2,8 @@ import socket
 import threading
 from common.common_variables import *
 from common.protocols.my_socket import MySocket
+from common.protocols.my_tcp import MyTCP
+from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
 from vpn.src.classes.log_manager import LogManager
 from vpn.src.classes.socket_manager import SocketManager
@@ -24,76 +26,120 @@ class MyVPN:
 
     def __create_socket(self):
         "This method create the vpn server socket"
-        # Todo: Correctly implement create socket
         if self.protocol == VPNProtocol.TCP:
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        elif self.protocol == VPNProtocol.UDP:
-            self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.__socket = MyTCP()
         else:
-            raise Exception("Protocol not supported")
+            self.__socket = MyUDP()
 
     def __activate_socket(self):
         "This method activate the vpn server socket, and bind it to an specific address"
-        # Todo: Correctly implement activate socket
-        pass
+        self.__socket.bind(self.ip, self.port)
+        self.__socket.listen()
 
     def __run_server(self):
         "This method create a thread with the server process attached to it"
-        # Todo: Correctly implement run server
         server_thread = threading.Thread(target=self.__server_process)
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
     def __server_process(self):
         "This method is the main process of the server, it will be running until the server is stopped"
-        # Todo: Correctly implement server process
-        # while self.__vpn_status == VPNStatus.RUNNING:
-        #     # Accept a connection
-        #     client_socket, client_address = self.__socket.accept()
+        while self.__vpn_status == VPNStatus.RUNNING:
+            # Accept a connection
+            client_socket, client_address = self.__socket.accept()
 
-        #     # Add the socket to the socket manager
-        #     self.__socket_manager.add_socket(client_socket, client_address)
+            # Add the socket to the socket manager
+            self.__socket_manager.add_socket(client_socket, client_address)
 
-        #     # Add to log
-        #     self.__log_manager.add_log("New connection from: " + str(client_address))
+            # Add to log
+            self.__log_manager.add_log("New connection from: " + str(client_address))
 
-        #     # Create a thread to handle the client
-        #     client_thread = threading.Thread(
-        #         target=self.__client_process, args=(client_socket, client_address)
-        #     )
-        #     client_thread.start()
+            # Create a thread to handle the client
+            client_thread = threading.Thread(
+                target=self.__client_process, args=(client_socket, client_address)
+            )
+            client_thread.start()
 
-        #     # Add the thread to the thread manager
-        #     self.__thread_manager.add_thread(client_thread)
+            # Add the thread to the thread manager
+            self.__thread_manager.add_thread(client_thread)
+
+    def __create_fake_socket(self, client_address, ip_server, port_server):
+
+        "This method create a fake socket for the client"
+
+        fake_socket = None
+        # Create a fake socket
+        if self.protocol == VPNProtocol.TCP:
+            fake_socket = MyTCP()
+        else:
+            fake_socket = MyUDP()
+
+        # Get the fake ip and port
+
+        fake_ip = self.__extract_fake_ip(client_address)
+
+        # Bind the fake socket to the fake ip and port
+
+        fake_socket.bind(fake_ip, 0) # 0 means auto assign port
+
+        # Connect the fake socket to the server
+
+        fake_socket.connect(ip_server, port_server)
+
+        # Return the fake socket
+
+        return fake_socket
+
+
+    def __extract_fake_ip(self, client_address):
+        "This method extract the client fake ip and port"
+        # Todo: Extract the client fake ip and port from the database
         pass
+
+
 
     def __client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
-        # Todo: Correctly implement client process
-        # while self.__vpn_status == VPNStatus.RUNNING:
-        #     # Receive the data
-        #     data = client_socket.recv(1024)
 
-        #     # If the client is disconnected
-        #     if not data:
-        #         break
+        # fix: ip_server and port_server
 
-        #     # Process the data
-        #     self.__process_data(data)
+        fake_client_socket = self.__create_fake_socket(client_address,ip_server, port_server)
 
-        # # Close the socket
-        # client_socket.close()
+        # Add the fake socket to the socket manager
 
-        # # Remove the socket from the socket manager
-        # self.__socket_manager.remove_socket(client_socket)
+        self.__socket_manager.add_socket(fake_client_socket)
+        
+        while self.__vpn_status == VPNStatus.RUNNING:
 
-        # # Remove the thread from the thread manager
-        # self.__thread_manager.remove_thread(threading.current_thread())
-        pass
+            # fix: implement correctly send and recv
+
+            # Receive the data
+            data = client_socket.recv(1024)
+
+            # If the client is disconnected
+            if not data:
+                break
+
+            # Process the data
+            self.__process_data(data)
+
+        # Close the socket
+        client_socket.close()
+        fake_client_socket.close()
+
+        # Add to log
+        self.__log_manager.add_log("Connection closed with: " + str(client_address))
+
+        # Remove the socket from the socket manager
+        self.__socket_manager.remove_socket(client_socket)
+        self.__socket_manager.remove_socket(fake_client_socket)
+
+        # Remove the thread from the thread manager
+        self.__thread_manager.remove_thread(threading.current_thread())
 
     def __process_data(self, data):
         "This method process the data received from the client"
-        # Todo: Is this necessary?
+        # Todo: Is this necessary? R/por ahora no,pero lo mas posible es que si
         pass
 
     def __show_log(self):

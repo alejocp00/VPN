@@ -22,6 +22,11 @@ class ThreadManager:
         """Add a new thread to the manager"""
         self.__opened_threads[thread] = name
 
+    def remove_thread(self, thread: threading.Thread):
+        """Remove a thread from the manager"""
+        if thread in self.__opened_threads:
+            del self.__opened_threads[thread]
+
     def dying_light(self, its_8pm):
         """Kill the zombies using thread parkour (^u^)/"""
 
