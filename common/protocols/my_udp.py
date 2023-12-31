@@ -12,21 +12,12 @@ class MyUDP(MySocket):
 
     def bind(self, ip, port):
         self.socket.bind((ip, port))
-
-    def listen(self) :
-        self.socket.listen()
-
-    def accept(self):
-        return self.socket.accept()
     
-    def send(self, data):
-        self.socket.send(data)
+    def sendto(self, data, server):
+        self.socket.sendto(data, server)
 
-    def recv(self, buffer_size):
-        return self.socket.recv(buffer_size)
+    def recvfrom(self, buffer_size):
+        return self.socket.recvfrom(buffer_size)
     
     def close(self):
         self.socket.close()
-
-    def connect(self, ip, port):
-        self.socket.connect((ip, port))
