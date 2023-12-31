@@ -27,12 +27,17 @@ class Server(metaclass=ABCMeta):
 
         # Bind the socket to the port
         self.__socket.bind((self._config["server_ip"], self._config["server_port"]))
-        
-        # Listen for incoming connections
-        self.__socket.listen()
+
+        if(self._config["protocol"] == VPNProtocol.TCP):
+            # Listen for incoming connections
+            self.__socket.listen()
 
         # Create a server thread
-        server_thread = threading.Thread(target=self._wait_for_connection)
+        if(self._config["protocol"] == VPNProtocol.TCP):
+            server_thread = threading.Thread(target=self._wait_for_connection)
+        else:
+            server_thread = threading.Thread(target=self._udp_recieve_data)
+
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
@@ -74,6 +79,36 @@ class Server(metaclass=ABCMeta):
         # Remove the socket from the socket manager
         self.__socket_manager.remove_socket(client_socket)
 
+        # Remove the thread from the thread manager
+        self.__thread_manager.remove_thread(threading.current_thread())
+
+    def _udp_recieve_data(self):
+
+        """ Recieve data from clients."""
+
+        while self.__vpn_status == VPNStatus.RUNNING:
+            
+            recv_data, client_address = self.__socket.recvfrom(1024)
+
+            print("Data received from: " + str(client_address))
+
+            # Create a thread to handle the client
+            client_thread = threading.Thread(
+                target=self.__udp_client_process, args=(client_address)
+            )
+            client_thread.start()
+
+            # Add the thread to the thread manager
+            self.__thread_manager.add_thread(client_thread)
+
+    def __udp_client_process(self, client_address):
+        """ Process the data received from the client."""
+
+        # Receive the data in small chunks and retransmit it
+        while self.__vpn_status == VPNStatus.RUNNING:
+            #hacer algo con los datos
+            pass
+        
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
 
