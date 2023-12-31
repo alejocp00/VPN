@@ -13,8 +13,8 @@ class MyUDP(MySocket):
     def bind(self, ip, port):
         self.socket.bind((ip, port))
     
-    def sendto(self, data, ip, port):
-        self.socket.sendto(data, (ip, port))
+    def sendto(self, data, server):
+        self.socket.sendto(data, server)
 
     def recvfrom(self, buffer_size):
         return self.socket.recvfrom(buffer_size)
