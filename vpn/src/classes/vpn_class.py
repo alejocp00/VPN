@@ -17,7 +17,6 @@ class MyVPN:
         self.protocol = VPNProtocol.UNKNOWN
         self.port = VPN_SERVER_PORT
         self.ip = VPN_SERVER_IP
-        self.__socket = None
         self.__process_flags = {}
         self.__thread_manager = ThreadManager()
         self.__socket_manager = SocketManager()
@@ -26,16 +25,13 @@ class MyVPN:
 
     def __create_socket(self):
         "This method create the vpn server socket"
-        if self.protocol == VPNProtocol.TCP:
-            self.__socket = MyTCP()
-        else:
-            self.__socket = MyUDP()
+        self.__socket = MySocket(self.protocol)
 
     def __activate_socket(self):
         "This method activate the vpn server socket, and bind it to an specific address"
-        self.__socket.bind(self.ip, self.port)
+        self.__socket.bind((self.ip, self.port))
 
-        if(self.protocol == VPNProtocol.TCP):
+        if self.protocol == VPNProtocol.TCP:
             self.__socket.listen()
 
     def __run_server(self):
@@ -49,15 +45,10 @@ class MyVPN:
         self.__thread_manager.add_thread(server_thread, "server")
 
     def __create_fake_socket(self, client_address, ip_server, port_server):
-
         "This method create a fake socket for the client"
 
-        fake_socket = None
         # Create a fake socket
-        if self.protocol == VPNProtocol.TCP:
-            fake_socket = MyTCP()
-        else:
-            fake_socket = MyUDP()
+        fake_socket = MySocket(self.protocol)
 
         # Get the fake ip and port
 
@@ -65,12 +56,12 @@ class MyVPN:
 
         # Bind the fake socket to the fake ip and port
 
-        fake_socket.bind(fake_ip, 0) # 0 means auto assign port
+        fake_socket.bind((fake_ip, 0))  # 0 means auto assign port
 
         # Connect the fake socket to the server
 
-        if(self.protocol == VPNProtocol.TCP):
-            fake_socket.connect(ip_server, port_server)
+        if self.protocol == VPNProtocol.TCP:
+            fake_socket.connect((ip_server, port_server))
 
         # Return the fake socket
 
@@ -130,7 +121,6 @@ class MyVPN:
 
         self.menu
 
-
     #########
     #  TCP  #
     #########
@@ -154,21 +144,22 @@ class MyVPN:
             client_thread.start()
 
             # Add the thread to the thread manager
-            self.__thread_manager.add_thread(client_thread)
+            self.__thread_manager.add_thread(client_thread, "client")
 
     def __tcp_client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
         # fix: ip_server and port_server
 
-        fake_client_socket = self.__create_fake_socket(client_address,ip_server, port_server)
+        fake_client_socket = self.__create_fake_socket(
+            client_address, ip_server, port_server
+        )
 
         # Add the fake socket to the socket manager
 
-        self.__socket_manager.add_socket(fake_client_socket)
-        
-        while self.__vpn_status == VPNStatus.RUNNING:
+        self.__socket_manager.add_socket(fake_client_socket, client_address)
 
+        while self.__vpn_status == VPNStatus.RUNNING:
             # fix: implement correctly send and recv
 
             # Receive the data
@@ -195,49 +186,46 @@ class MyVPN:
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
 
-
     #########
     #  UDP  #
     #########
 
     def __udp_server_process(self):
-
         "This method is the main process of the server, it will be running until the server is stopped"
         while self.__vpn_status == VPNStatus.RUNNING:
-            
-            recv_data, client_address = self.__socket.recvfrom(1024)
+            recv_data, client_address = self.__socket.recv(1024)
 
             # Add to log
             self.__log_manager.add_log("Data received from: " + str(client_address))
 
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__udp_client_process, args=(client_address)
+                target=self.__udp_client_process, args=[client_address]
             )
             client_thread.start()
 
             # Add the thread to the thread manager
-            self.__thread_manager.add_thread(client_thread)
+            self.__thread_manager.add_thread(client_thread, "client")
 
     def __udp_client_process(self, client_address):
-
         "This method is the main process of the client, it will be running until the client is disconnected"
 
         # fix: ip_server and port_server
 
-        fake_client_socket = self.__create_fake_socket(client_address,ip_server, port_server)
+        fake_client_socket = self.__create_fake_socket(
+            client_address, ip_server, port_server
+        )
 
         # Add the fake socket to the socket manager
 
-        self.__socket_manager.add_socket(fake_client_socket)
-        
-        while self.__vpn_status == VPNStatus.RUNNING:
+        self.__socket_manager.add_socket(fake_client_socket, client_address)
 
+        while self.__vpn_status == VPNStatus.RUNNING:
             # fix: implement correctly send and recv
 
             # Receive the data
 
-            data, server_address = fake_client_socket.recvfrom(1024)
+            data, server_address = fake_client_socket.recv(1024)
 
             # If the client is disconnected
             if not data:
@@ -254,7 +242,6 @@ class MyVPN:
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
-
 
     #########
     # MENUS #
