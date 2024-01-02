@@ -23,3 +23,12 @@ def delete_vlan(id):
               )
     conn.commit()
     conn.close()
+
+def exists_vlan(id):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM vlans WHERE id=?", (id,)
+              )
+    result = c.fetchone()
+    conn.close()
+    return result != 0 
