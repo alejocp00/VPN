@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from common.common_variables import *
+from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
 from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
@@ -20,7 +21,7 @@ class Server(metaclass=ABCMeta):
         self.__vpn_status = VPNStatus.IDLE
 
     def _start_server(self):
-        """ Activate the server."""
+        """Activate the server."""
 
         # Create the socket
         self._create_socket()
@@ -28,24 +29,23 @@ class Server(metaclass=ABCMeta):
         # Bind the socket to the port
         self.__socket.bind((self._config["server_ip"], self._config["server_port"]))
 
-        if(self._config["protocol"] == VPNProtocol.TCP):
+        if self._config["protocol"] == VPNProtocol.TCP:
             # Listen for incoming connections
             self.__socket.listen()
 
         # Create a server thread
-        if(self._config["protocol"] == VPNProtocol.TCP):
+        if self._config["protocol"] == VPNProtocol.TCP:
             server_thread = threading.Thread(target=self._wait_for_connection)
         else:
-            server_thread = threading.Thread(target=self._udp_recieve_data)
+            server_thread = threading.Thread(target=self._udp_receive_data)
 
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
     def _wait_for_connection(self):
-        """ Wait for a connection from a client."""
+        """Wait for a connection from a client."""
 
         while self.__vpn_status == VPNStatus.RUNNING:
-
             client_socket, client_address = self.__socket.accept()
 
             # Add the socket to the socket manager
@@ -53,26 +53,25 @@ class Server(metaclass=ABCMeta):
 
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self._recieve_data , args=(client_socket, client_address)
+                target=self._receive_data, args=(client_socket, client_address)
             )
             client_thread.start()
             self.__thread_manager.add_thread(client_thread, "client")
 
-    def _recieve_data(self, client_socket, client_address):
-
-        """ Recieve data from the client."""
+    def _receive_data(self, client_socket, client_address):
+        """Receive data from the client."""
 
         # Receive the data in small chunks and retransmit it
         while self.__vpn_status == VPNStatus.RUNNING:
             data = client_socket.recv(16)
-            print('received {!r}'.format(data))
+            print("received {!r}".format(data))
             if data:
-                print('sending data back to the client')
+                print("sending data back to the client")
                 client_socket.sendall(data)
             else:
-                print('no data from', client_address)
+                print("no data from", client_address)
                 break
-        
+
         # Close the connection
         client_socket.close()
 
@@ -82,47 +81,43 @@ class Server(metaclass=ABCMeta):
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
 
-    def _udp_recieve_data(self):
-
-        """ Recieve data from clients."""
+    def _udp_receive_data(self):
+        """Receive data from clients."""
 
         while self.__vpn_status == VPNStatus.RUNNING:
-            
-            recv_data, client_address = self.__socket.recvfrom(1024)
+            recv_data, client_address = self.__socket.recv(1024)
 
             print("Data received from: " + str(client_address))
 
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__udp_client_process, args=(client_address)
+                target=self.__udp_client_process, args=[client_address]
             )
             client_thread.start()
 
             # Add the thread to the thread manager
-            self.__thread_manager.add_thread(client_thread)
+            self.__thread_manager.add_thread(client_thread, "client")
 
     def __udp_client_process(self, client_address):
-        """ Process the data received from the client."""
+        """Process the data received from the client."""
 
         # Receive the data in small chunks and retransmit it
         while self.__vpn_status == VPNStatus.RUNNING:
-            #hacer algo con los datos
+            # hacer algo con los datos
             pass
-        
+
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
 
     def _create_socket(self):
         """Create the server socket."""
-        if self._config["protocol"] == VPNProtocol.TCP:
-            self.__socket = MyTCP()
-        elif self._config["protocol"] == VPNProtocol.UDP:
-            self.__socket = MyUDP()
-        else:
+        if self._config["protocol"] == VPNProtocol.UNKNOWN:
             raise Exception("No socket protocol provided")
 
-    def _stop_server (self):
-        """ Stop the server."""
+        self.__socket = MySocket(self._config["protocol"])
+
+    def _stop_server(self):
+        """Stop the server."""
 
         # Set the vpn status
         self.__vpn_status = VPNStatus.SHUTING_DOWN
@@ -136,7 +131,6 @@ class Server(metaclass=ABCMeta):
         self.__vpn_status = VPNStatus.IDLE
 
         self.menu
-
 
     def menu(self):
         """Show the menu."""
