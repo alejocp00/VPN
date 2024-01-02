@@ -16,6 +16,23 @@ def select_ip(id):
     conn.close()
     return ip
 
+def get_ip_id(ip):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT id FROM ips WHERE ip=?", (ip,))
+    ip = c.fetchone()[0]
+    conn.close()
+    return ip
+
+
+def select_ip(vlanId):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT ip FROM ips WHERE vlanId=?", (vlanId,))
+    ips = c.fetchall()
+    conn.close()
+    return ips
+
 def delete_ip(id):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
