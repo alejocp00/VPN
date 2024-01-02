@@ -1,10 +1,10 @@
 import sqlite3
 
-def insert_user(user, ip):
+def insert_user(user, assignedIp):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("INSERT INTO users (id, name, password, vlanId, ipId) VALUES (?, ?, ?, ?, ?)",
-              (user.id, user.name, user.password, user.vlan, ip))
+    c.execute("INSERT INTO users (id, name, password, userIp, vlanId, ipId) VALUES (?, ?, ?, ?, ?, ?)",
+              (user.id, user.name, user.password, user.userIp, user.vlan, assignedIp))
     conn.commit()
     conn.close()
 
@@ -24,13 +24,22 @@ def select_user_by_id(id):
     conn.close()
     return user
 
-def select_user_by_ip(ip):
+def select_user_by_original_ip(ip):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE ipId=?", (ip,))
+    c.execute("SELECT * FROM users WHERE userIp=?", (ip,))
     user = c.fetchone()
     conn.close()
     return user
+
+def get_assigned_ip_by_original_ip(ip):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT ips.ip FROM users INNER JOIN ips ON users.ipId=ips.id WHERE users.userIp=?", (ip,))
+    assigned_ip = c.fetchone()
+    conn.close()
+    return assigned_ip
+
 
 def delete_user(id):
     conn = sqlite3.connect('vpn.db')
@@ -48,3 +57,4 @@ def exists_user(name):
     result = c.fetchone()[0]
     conn.close()
     return result != 0 
+
