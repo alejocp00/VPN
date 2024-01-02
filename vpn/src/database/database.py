@@ -16,7 +16,8 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
 c.execute("""CREATE TABLE IF NOT EXISTS vlans(
         id INTEGER PRIMARY KEY,
         network VARCHAR, 
-        mask VARCHAR
+        mask VARCHAR,
+        hostNumber INTEGER
 ) """)
           
 c.execute("""CREATE TABLE IF NOT EXISTS iprange(

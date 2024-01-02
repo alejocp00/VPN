@@ -1,5 +1,6 @@
 import socket
 import threading
+import ipaddress
 from common.common_variables import *
 from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
@@ -8,6 +9,7 @@ from common.screen_utils import *
 from vpn.src.classes.log_manager import LogManager
 from vpn.src.classes.socket_manager import SocketManager
 from vpn.src.classes.threads_manager import ThreadManager
+from database.usersDb import *
 
 
 class MyVPN:
@@ -75,6 +77,20 @@ class MyVPN:
         # Return the fake socket
 
         return fake_socket
+    
+    ######################
+    # AUXILIAR FUNCTIONS #
+    ######################
+
+    def get_max_hosts(address, mask):
+        "Calculates the maximum number of hosts that a vlan supports"
+        # Create a network object using address and mask
+        network = ipaddress.IPv4Network(address + '/' + mask, strict=False)
+
+        # Calculate the maximum number of computers in the VLAN
+        max_hosts = network.num_addresses - 2  # Subtract network and broadcast address
+
+        return max_hosts
 
     def __extract_fake_ip(self, client_address):
         "This method extract the client fake ip and port"
@@ -348,6 +364,7 @@ class MyVPN:
 
         # Get client data
         client_user_name = get_user_name()
+
         client_password = get_password()
 
         # Get VLAN
@@ -358,6 +375,10 @@ class MyVPN:
         # Todo: Add user to the database
 
         self.menu()
+
+    def __create_vlan_menu(self):
+        "Creates a vlan"
+
 
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
