@@ -27,8 +27,8 @@ class MySocket:
     def bind(self, address):
         self._socket.bind(address)
 
-    def listen(self, backlog):
-        self._socket.listen(backlog)
+    def listen(self):
+        self._socket.listen()
 
     def accept(self):
         return self._socket.accept()
@@ -39,8 +39,8 @@ class MySocket:
     def send(self, data):
         self._socket.send(data)
 
-    def recv(self, buffersize):
-        return self._socket.recv(buffersize)
+    def recv(self, buffer_size):
+        return self._socket.recv(buffer_size)
 
     def sendall(self, data):
         self._socket.sendall(data)
