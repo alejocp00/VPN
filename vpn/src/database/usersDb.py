@@ -24,6 +24,14 @@ def select_user_by_id(id):
     conn.close()
     return user
 
+def select_user_by_ip(ip):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE ipId=?", (ip,))
+    user = c.fetchone()
+    conn.close()
+    return user
+
 def delete_user(id):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
