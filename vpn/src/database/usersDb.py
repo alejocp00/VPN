@@ -39,3 +39,12 @@ def delete_user(id):
               )
     conn.commit()
     conn.close()
+
+def exists_user(name):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM users WHERE name=?", (name,)
+              )
+    result = c.fetchone()[0]
+    conn.close()
+    return result != 0 
