@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from ctypes import util
 from tkinter import Menu
 from common.common_variables import *
+from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
 from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
@@ -11,19 +12,19 @@ class Client(metaclass=ABCMeta):
     def __init__(self):
         self._config = {
             "client_ip": None,
-            "server_ip": None,
-            "server_port": None,
+            "server_ip": VPN_SERVER_IP,
+            "server_port": VPN_SERVER_PORT,
             "client_port": None,
             "protocol": VPNProtocol.UNKNOWN,
         }
-        self._user_name = None
-        self.__password = None
+        self._user_name = ""
+        self.__password = ""
 
     def connect(self):
         """Connect to the server."""
         # Get the user information
-        self._user_name = get_user_name() if not self._user_name else self._user_name
-        self.__password = get_password() if not self.__password else self.__password
+        self._user_name = get_user_name() if self._user_name == "" else self._user_name
+        self.__password = get_password() if self.__password == "" else self.__password
 
         # Perform first connection with the vpn
         received_data = self.__perform_first_connection()
@@ -34,15 +35,6 @@ class Client(metaclass=ABCMeta):
         # Connect to the server
         self._connect_to_server()
 
-    def _create_socket(self):
-        """Create the client socket."""
-        if self._config["protocol"] == VPNProtocol.TCP:
-            self.__socket = MyTCP()
-        elif self._config["protocol"] == VPNProtocol.UDP:
-            self.__socket = MyUDP()
-        else:
-            raise Exception("No socket protocol provided")
-
     def _connect_to_server(self):
         """Connect to the server."""
 
@@ -52,7 +44,7 @@ class Client(metaclass=ABCMeta):
         """Get the VPN protocol."""
 
         # Instance a new MyTCP socket for the first connection
-        self.__socket = MyTCP()
+        self.__socket = MySocket(VPNProtocol.TCP)
 
         # Create the request message
         request_message = self.__create_request_message()
@@ -61,10 +53,10 @@ class Client(metaclass=ABCMeta):
         self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
         # Send the request message
-        self.__socket.sendall(request_message)
+        self.__socket.send(request_message)
 
         # Receive the response message
-        response_message = self.__socket.recv(1024)
+        response_message = self.__socket.recv(1024).decode()
 
         # Process the response
         self.__set_configuration(response_message)
@@ -74,13 +66,42 @@ class Client(metaclass=ABCMeta):
 
     def __create_request_message(self):
         """Create the request message."""
-        # Todo: Implement the request message
-        pass
+        message = ""
+
+        # Indicate that is a login request
+        message += REQUEST_LOGIN_HEADER + REQUEST_SEPARATOR
+
+        # Add the user name
+        message += self._user_name + REQUEST_SEPARATOR
+
+        # Add the password
+        message += self.__password
+
+        return message.encode()
 
     def __set_configuration(self, received_data):
         """Set the configuration."""
-        # Todo: Implement this method
-        pass
+
+        if not received_data or received_data == "":
+            # Todo: Handle this exception. It can't break the program
+            raise Exception("Error: The received data is empty")
+
+        # Split the received data
+        received_data = received_data.split(REQUEST_SEPARATOR)
+
+        # Process correct response
+        if received_data[0] == REQUEST_ACCEPTED_HEADER:
+            # Set the configuration
+            self._config["client_ip"] = received_data[1]
+            self._config["protocol"] = (
+                VPNProtocol.TCP if received_data[2] == "tcp" else VPNProtocol.UDP
+            )
+            return
+
+        # Process incorrect response
+        if received_data[0] == REQUEST_ERROR_HEADER:
+            # Todo: Handle this exception. It can't break the program
+            raise Exception(f"Error: {received_data[1]}")
 
     def disconnect(self):
         """Disconnect from the server."""

@@ -1,12 +1,22 @@
-from abc import ABCMeta, abstractmethod
+from common.protocols.my_tcp import MyTCP
+from common.protocols.my_udp import MyUDP
+from common.protocols.utils import VPNProtocol
 import socket
 
 
-class MySocket(metaclass=ABCMeta):
-    def __init__(self) -> None:
+class MySocket:
+    def __init__(self, protocol: VPNProtocol) -> None:
+        # Selecting the protocol to use
+        if protocol == VPNProtocol.TCP:
+            self._protocol = MyTCP()
+        elif protocol == VPNProtocol.UDP:
+            self._protocol = MyUDP()
+        else:
+            raise NotImplementedError("Protocol not implemented")
+
         # fix: need to be raw
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self._socket =socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+
         # Todo: Implement
         pass
 
