@@ -365,6 +365,13 @@ class MyVPN:
         # Get client data
         client_user_name = get_user_name()
 
+        # verify if user name already exists in database
+        existing_user = select_user_by_name(client_user_name)
+        
+        if(existing_user):
+            print("That user name already exists")
+            self.__create_client_menu()
+
         client_password = get_password()
 
         # Get VLAN
