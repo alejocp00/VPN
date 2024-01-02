@@ -115,13 +115,15 @@ class Client(metaclass=ABCMeta):
     def menu(self):
         """Show the menu."""
 
-        print("1. Connect to a server")
-        print("2. Start the service")
-        print("3. Disconnect from the server")
+        options = [
+            "1. Connect to the VPN",
+            "2. Execute the client function",
+            "3. Disconnect from the VPN",
+        ]
 
-        option = input("Option: ")
+        option = input("Select an option: ")
 
-        while option not in ["1", "2", "3"]:
+        while option not in [str(i) for i in range(1, len(options) + 1)]:
             clear_screen()
             self.menu()
 
