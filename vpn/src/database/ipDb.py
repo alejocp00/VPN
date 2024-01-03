@@ -3,8 +3,8 @@ import sqlite3
 def insert_ip(ip, vlanId):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("INSERT INTO ips (ip, vlanId) VALUES (?, ?)",
-              (ip, vlanId))
+    c.execute("INSERT INTO ips (ip, vlanId, active) VALUES (?, ?, ?)",
+              (ip, vlanId, 0))
     conn.commit()
     conn.close()
 
@@ -48,3 +48,10 @@ def select_all_ips():
     ips = c.fetchall()
     conn.close
     return ips
+
+def update_active_ip(ip, value):
+     conn = sqlite3.connect('vpn.db')
+     c = conn.cursor()
+     c.execute("UPDATE ips SET active=? WHERE ip=?", (value,ip))
+     conn.commit()
+     conn.close()
