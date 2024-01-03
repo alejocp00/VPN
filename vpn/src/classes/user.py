@@ -1,6 +1,5 @@
 class User():
-    def __init__(self, id, name, password, userIp, vlan):
-        self.id = id
+    def __init__(self, name, password, userIp, vlan):
         self.name = name
         self.password = password
         self.userIp = userIp
