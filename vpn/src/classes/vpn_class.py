@@ -12,6 +12,8 @@ from vpn.src.classes.threads_manager import ThreadManager
 from database.usersDb import *
 from database.vlansDb import *
 from database.ipDb import *
+from database.iprange import *
+from database.vlansIprangeDb import *
 from vpn.src.classes.vlan import Vlan
 from vpn.src.classes.user import User
 
@@ -406,11 +408,16 @@ class MyVPN:
 
         # Get vlan info
         vlan_temporal = get_id()
+        existingVlan = exists_vlan(vlan_temporal)
 
-        # Todo:  check if vlan exist
-        ip_range = get_ip_range()
-
-        # Todo: Add to database
+        if(not existingVlan):
+            print("The inserted Vlan does not exists in database")
+            self.__restrict_vlan_menu()
+        
+        ipRange = get_ip_range()
+        insert_iprange(ipRange)
+        ipRangeId = select_id_for_iprange(ipRange)
+        insert_vlanIprange(vlan_temporal, ipRangeId)
 
         self.menu()
 
