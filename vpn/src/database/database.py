@@ -23,8 +23,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS vlans(
           
 c.execute("""CREATE TABLE IF NOT EXISTS iprange(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        inicialIp VARCHAR NOT NULL,
-        finalIp VARCHAR NOT NULL
+        rangeIp VARCHAR NOT NULL UNIQUE
 )""")
           
 c.execute("""CREATE TABLE IF NOT EXISTS ips(

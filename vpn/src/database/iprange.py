@@ -1,9 +1,9 @@
 import sqlite3
-def insert_iprange(inicialIp, finalIp):
+def insert_iprange(rangeIp):
      conn = sqlite3.connect('vpn.db')
      c = conn.cursor()
-     c.execute("INSERT INTO iprange (inicialIp, finalIp) VALUES (?, ?)",
-              (inicialIp, finalIp))
+     c.execute("INSERT INTO iprange (rangeIp) VALUES (?)",
+              (rangeIp,))
      conn.commit()
      conn.close()
 
@@ -14,3 +14,11 @@ def select_all_ipranges():
     ipranges = c.fetchall()
     conn.close
     return ipranges
+
+def select_id_for_iprange(iprange):
+     conn = sqlite3.connect('vpn.db')
+     c = conn.cursor()
+     c.execute("SELECT id FROM iprange WHERE rangeIp=?",(iprange,))
+     iprange = c.fetchone()[0]
+     conn.close()
+     return iprange
