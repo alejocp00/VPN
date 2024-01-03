@@ -452,3 +452,11 @@ class MyVPN:
                 return False
         
         return True
+    
+    def is_valid_user(username, password):
+        existingUser = exists_user(username)
+        if not existingUser:
+            return False
+        if(password != select_user_password(username)):
+            return False
+        return True
