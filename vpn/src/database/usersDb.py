@@ -58,3 +58,19 @@ def exists_user(name):
     conn.close()
     return result != 0 
 
+def exists_user_by_id(id):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM users WHERE id=?", (id,)
+              )
+    result = c.fetchone()[0]
+    conn.close()
+    return result != 0 
+
+def select_id_for_username(name):
+     conn = sqlite3.connect('vpn.db')
+     c = conn.cursor()
+     c.execute("SELECT id FROM users WHERE name=?",(name,))
+     id = c.fetchone()[0]
+     conn.close()
+     return id

@@ -14,6 +14,7 @@ from database.vlansDb import *
 from database.ipDb import *
 from database.iprange import *
 from database.vlansIprangeDb import *
+from database.usersIprangeDb import *
 from vpn.src.classes.vlan import Vlan
 from vpn.src.classes.user import User
 
@@ -425,15 +426,16 @@ class MyVPN:
         """Restrict User."""
 
         # Get user id
-        user_id = get_id(True)
+        userId = get_id(True)
+        existingUser = exists_user_by_id(userId)
 
-        # Todo: Check if user id is correct
-
-        # Get vlan id
-        vlan_id = get_id(False)
-
-        # Todo: Check if vlan id is correct
-
-        # Todo: Add it to database
-
+        if(not existingUser):
+            print("The user id inserted does not exists in database")
+            self.__restrict_user_menu()
+        
+        ipRange = get_ip_range()
+        insert_iprange(ipRange)
+        ipRangeId = select_id_for_iprange(ipRange)
+        
+        insert_userIprange(userId, ipRangeId)
         return self.menu()
