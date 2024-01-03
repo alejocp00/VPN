@@ -1,5 +1,6 @@
 import socket
 import threading
+import ipaddress
 from common.common_variables import *
 from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
@@ -8,7 +9,11 @@ from common.screen_utils import *
 from vpn.src.classes.log_manager import LogManager
 from vpn.src.classes.socket_manager import SocketManager
 from vpn.src.classes.threads_manager import ThreadManager
-
+from database.usersDb import *
+from database.vlansDb import *
+from database.ipDb import *
+from vpn.src.classes.vlan import Vlan
+from vpn.src.classes.user import User
 
 class MyVPN:
     def __init__(self):
@@ -66,11 +71,11 @@ class MyVPN:
         # Return the fake socket
 
         return fake_socket
-
+    
+    
     def __extract_fake_ip(self, client_address):
         "This method extract the client fake ip and port"
-        # Todo: Extract the client fake ip and port from the database
-        pass
+        return get_assigned_ip_by_original_ip(client_address)
 
     def __process_data(self, data):
         "This method process the data received from the client"
@@ -335,17 +340,67 @@ class MyVPN:
 
         # Get client data
         client_user_name = get_user_name()
+
+        # verify if username already exists in database
+        existing_user = exists_user(client_user_name)
+
+        if(existing_user):
+            print("The username inserted already exists")
+            self.__create_client_menu()
+
         client_password = get_password()
 
         # Get VLAN
-        vlan_temporal = get_id
+        vlan = self.__get_vlan()
+        userIp = get_ip_address()
 
-        # Todo: Check for vlan, and user
+        user = User(client_user_name, client_password, userIp, vlan)
+        assignedIp = select_no_active_ip_by_vlan(vlan)
 
-        # Todo: Add user to the database
+        insert_user(user, assignedIp)
+
 
         self.menu()
 
+    def __get_vlan(self):
+        "Get the vlan inserted and verifies if it's a valid vlan"
+        vlan_temporal = get_id()
+
+        existingVlan = exists_vlan(vlan_temporal)
+
+        if(not existingVlan):
+            print("The inserted Vlan does not exists in database")
+            self.__get_vlan()
+
+        isVlanFull = is_vlan_full(vlan_temporal)
+        if(isVlanFull):
+            print("The inserted Vlan does not have capacity for a new user")
+            self.__get_vlan()
+
+        return vlan_temporal
+        
+    def __create_vlan_menu(self):
+        "Creates a vlan"
+        vlanId = get_id()
+
+        if(exists_vlan(vlanId)):
+            print("The inserted Vlan already exists.")
+            self.__create_vlan_menu()
+        
+        vlanIpAddress = get_ip_address()
+        vlanMask = get_mask()
+
+        vlan = Vlan(vlanId, vlanIpAddress, vlanMask)
+        insert_vlan(vlan)
+        self.__insert_vlan_ips(vlan)
+
+    def insert_vlan_ips(vlan):
+        "This function inserts all the ips of the created vlan into the database"
+        ips = vlan.get_all_ips()
+        for ip in ips:
+            insert_ip(str(ip), vlan.id)
+        return
+    
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
 
