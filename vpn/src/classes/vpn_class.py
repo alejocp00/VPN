@@ -439,3 +439,16 @@ class MyVPN:
         
         insert_userIprange(userId, ipRangeId)
         return self.menu()
+
+    def is_in_range(ip, ipRange):
+        "This function verifies if an ip address is in a ip range"
+        octantsRange = ipRange.split(".")
+        octantsIp = ip.split(".")
+    
+        for i in range(0, len(octantsRange)):
+            if(octantsRange[i] == "x"): 
+                return True
+            if(octantsRange[i] != octantsIp[i]):
+                return False
+        
+        return True
