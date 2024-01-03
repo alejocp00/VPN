@@ -4,8 +4,8 @@ from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
 from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
-from vpn.src.classes.socket_manager import SocketManager
-from vpn.src.classes.threads_manager import ThreadManager
+from socket_manager import SocketManager
+from threads_manager import ThreadManager
 import threading
 
 

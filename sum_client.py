@@ -1,5 +1,5 @@
-from clients import Client
-from common.screen_utils import clear_screen
+from classes.client import Client
+from classes.common.screen_utils import clear_screen
 
 
 class SumClient(Client):

@@ -6,17 +6,18 @@ from common.protocols.my_socket import MySocket
 from common.protocols.my_tcp import MyTCP
 from common.protocols.my_udp import MyUDP
 from common.screen_utils import *
-from vpn.src.classes.log_manager import LogManager
-from vpn.src.classes.socket_manager import SocketManager
-from vpn.src.classes.threads_manager import ThreadManager
+from log_manager import LogManager
+from socket_manager import SocketManager
+from threads_manager import ThreadManager
 from database.usersDb import *
 from database.vlansDb import *
 from database.ipDb import *
 from database.iprange import *
 from database.vlansIprangeDb import *
 from database.usersIprangeDb import *
-from vpn.src.classes.vlan import Vlan
-from vpn.src.classes.user import User
+from vlan import Vlan
+from user import User
+
 
 class MyVPN:
     def __init__(self):
@@ -74,8 +75,7 @@ class MyVPN:
         # Return the fake socket
 
         return fake_socket
-    
-    
+
     def __extract_fake_ip(self, client_address):
         "This method extract the client fake ip and port"
         return get_assigned_ip_by_original_ip(client_address)
@@ -347,7 +347,7 @@ class MyVPN:
         # verify if username already exists in database
         existing_user = exists_user(client_user_name)
 
-        if(existing_user):
+        if existing_user:
             print("The username inserted already exists")
             self.__create_client_menu()
 
@@ -362,7 +362,6 @@ class MyVPN:
 
         insert_user(user, assignedIp)
 
-
         self.menu()
 
     def __get_vlan(self):
@@ -371,25 +370,25 @@ class MyVPN:
 
         existingVlan = exists_vlan(vlan_temporal)
 
-        if(not existingVlan):
+        if not existingVlan:
             print("The inserted Vlan does not exists in database")
             self.__get_vlan()
 
         isVlanFull = is_vlan_full(vlan_temporal)
-        if(isVlanFull):
+        if isVlanFull:
             print("The inserted Vlan does not have capacity for a new user")
             self.__get_vlan()
 
         return vlan_temporal
-        
+
     def __create_vlan_menu(self):
         "Creates a vlan"
         vlanId = get_id()
 
-        if(exists_vlan(vlanId)):
+        if exists_vlan(vlanId):
             print("The inserted Vlan already exists.")
             self.__create_vlan_menu()
-        
+
         vlanIpAddress = get_ip_address()
         vlanMask = get_mask()
 
@@ -397,13 +396,13 @@ class MyVPN:
         insert_vlan(vlan)
         self.__insert_vlan_ips(vlan)
 
-    def insert_vlan_ips(vlan):
+    def __insert_vlan_ips(self, vlan):
         "This function inserts all the ips of the created vlan into the database"
         ips = vlan.get_all_ips()
         for ip in ips:
             insert_ip(str(ip), vlan.id)
         return
-    
+
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
 
@@ -411,10 +410,10 @@ class MyVPN:
         vlan_temporal = get_id()
         existingVlan = exists_vlan(vlan_temporal)
 
-        if(not existingVlan):
+        if not existingVlan:
             print("The inserted Vlan does not exists in database")
             self.__restrict_vlan_menu()
-        
+
         ipRange = get_ip_range()
         insert_iprange(ipRange)
         ipRangeId = select_id_for_iprange(ipRange)
@@ -429,34 +428,34 @@ class MyVPN:
         userId = get_id(True)
         existingUser = exists_user_by_id(userId)
 
-        if(not existingUser):
+        if not existingUser:
             print("The user id inserted does not exists in database")
             self.__restrict_user_menu()
-        
+
         ipRange = get_ip_range()
         insert_iprange(ipRange)
         ipRangeId = select_id_for_iprange(ipRange)
-        
+
         insert_userIprange(userId, ipRangeId)
         return self.menu()
 
-    def is_in_range(ip, ipRange):
+    def __is_in_range(self, ip, ipRange):
         "This function verifies if an ip address is in a ip range"
         octantsRange = ipRange.split(".")
         octantsIp = ip.split(".")
-    
+
         for i in range(0, len(octantsRange)):
-            if(octantsRange[i] == "x"): 
+            if octantsRange[i] == "x":
                 return True
-            if(octantsRange[i] != octantsIp[i]):
+            if octantsRange[i] != octantsIp[i]:
                 return False
-        
+
         return True
-    
-    def is_valid_user(username, password):
+
+    def is_valid_user(self, username, password):
         existingUser = exists_user(username)
         if not existingUser:
             return False
-        if(password != select_user_password(username)):
+        if password != select_user_password(username):
             return False
         return True
