@@ -38,31 +38,31 @@ class Client(metaclass=ABCMeta):
     def _connect_to_server(self):
         """Connect to the server."""
 
-        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
+        self._socket.connect((self._config["server_ip"], self._config["server_port"]))
 
     def __perform_first_connection(self):
         """Get the VPN protocol."""
 
         # Instance a new MyTCP socket for the first connection
-        self.__socket = MySocket(VPNProtocol.TCP)
+        self._socket = MySocket(VPNProtocol.TCP)
 
         # Create the request message
         request_message = self.__create_request_message()
 
         # Connect the socket to the server
-        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
+        self._socket.connect((self._config["server_ip"], self._config["server_port"]))
 
         # Send the request message
-        self.__socket.send(request_message)
+        self._socket.send(request_message)
 
         # Receive the response message
-        response_message = self.__socket.recv(1024).decode()
+        response_message = self._socket.recv(1024).decode()
 
         # Process the response
         self.__set_configuration(response_message)
 
         # Close
-        self.__socket.close()
+        self._socket.close()
 
     def __create_request_message(self):
         """Create the request message."""
@@ -105,7 +105,7 @@ class Client(metaclass=ABCMeta):
 
     def disconnect(self):
         """Disconnect from the server."""
-        self.__socket.close()
+        self._socket.close()
 
     @abstractmethod
     def execute_function(self):
@@ -130,6 +130,7 @@ class Client(metaclass=ABCMeta):
         if option == "1":
             self.connect()
         elif option == "2":
+            # Todo: Check if the client is connected
             self.execute_function()
         elif option == "3":
             self.disconnect()
