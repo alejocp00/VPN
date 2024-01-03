@@ -46,12 +46,21 @@ def select_all_ips():
     c = conn.cursor()
     c.execute("SELECT * FROM ips")
     ips = c.fetchall()
-    conn.close
+    conn.close()
     return ips
 
-def update_active_ip(ip, value):
+def update_active_ip(id, value):
      conn = sqlite3.connect('vpn.db')
      c = conn.cursor()
-     c.execute("UPDATE ips SET active=? WHERE ip=?", (value,ip))
+     c.execute("UPDATE ips SET active=? WHERE id=?", (value,id))
      conn.commit()
      conn.close()
+
+def select_no_active_ip_by_vlan(vlanId):
+    conn = sqlite3.connect('vpn.db')
+    c = conn.cursor()
+    c.execute("SELECT id FROM ips WHERE vlanId=? AND active=0", (vlanId,))
+    ipId = c.fetchone()[0]
+    update_active_ip(ipId,1)
+    conn.close()
+    return ipId
