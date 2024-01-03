@@ -12,6 +12,9 @@ from vpn.src.classes.threads_manager import ThreadManager
 from database.usersDb import *
 from database.vlansDb import *
 from database.ipDb import *
+from database.iprange import *
+from database.vlansIprangeDb import *
+from database.usersIprangeDb import *
 from vpn.src.classes.vlan import Vlan
 from vpn.src.classes.user import User
 
@@ -406,11 +409,16 @@ class MyVPN:
 
         # Get vlan info
         vlan_temporal = get_id()
+        existingVlan = exists_vlan(vlan_temporal)
 
-        # Todo:  check if vlan exist
-        ip_range = get_ip_range()
-
-        # Todo: Add to database
+        if(not existingVlan):
+            print("The inserted Vlan does not exists in database")
+            self.__restrict_vlan_menu()
+        
+        ipRange = get_ip_range()
+        insert_iprange(ipRange)
+        ipRangeId = select_id_for_iprange(ipRange)
+        insert_vlanIprange(vlan_temporal, ipRangeId)
 
         self.menu()
 
@@ -418,15 +426,37 @@ class MyVPN:
         """Restrict User."""
 
         # Get user id
-        user_id = get_id(True)
+        userId = get_id(True)
+        existingUser = exists_user_by_id(userId)
 
-        # Todo: Check if user id is correct
-
-        # Get vlan id
-        vlan_id = get_id(False)
-
-        # Todo: Check if vlan id is correct
-
-        # Todo: Add it to database
-
+        if(not existingUser):
+            print("The user id inserted does not exists in database")
+            self.__restrict_user_menu()
+        
+        ipRange = get_ip_range()
+        insert_iprange(ipRange)
+        ipRangeId = select_id_for_iprange(ipRange)
+        
+        insert_userIprange(userId, ipRangeId)
         return self.menu()
+
+    def is_in_range(ip, ipRange):
+        "This function verifies if an ip address is in a ip range"
+        octantsRange = ipRange.split(".")
+        octantsIp = ip.split(".")
+    
+        for i in range(0, len(octantsRange)):
+            if(octantsRange[i] == "x"): 
+                return True
+            if(octantsRange[i] != octantsIp[i]):
+                return False
+        
+        return True
+    
+    def is_valid_user(username, password):
+        existingUser = exists_user(username)
+        if not existingUser:
+            return False
+        if(password != select_user_password(username)):
+            return False
+        return True
