@@ -31,6 +31,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS ips(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ip VARCHAR NOT NULL UNIQUE,
         vlanId INTEGER NOT NULL,
+        active INTEGER NOT NULL,
         FOREIGN KEY (vlanId) REFERENCES vlans (id)
 ) """) 
           
