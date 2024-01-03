@@ -21,3 +21,8 @@ class Vlan():
         max_hosts = network.num_addresses - 2  # Subtract network and broadcast address
 
         return max_hosts
+    
+    def get_all_ips(self):
+        network = ipaddress.ip_network(f"{self.network}/{self.mask}")
+        ips = network.hosts()
+        return ips
