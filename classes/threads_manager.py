@@ -10,7 +10,7 @@ class ThreadManager:
         thread = threading.Thread(
             target=self.dying_light,
             args=(
-                self,
+                
                 False,
             ),
         )
@@ -30,21 +30,21 @@ class ThreadManager:
     def dying_light(self, its_8pm):
         """Kill the zombies using thread parkour (^u^)/"""
 
-        while self.__is_running:
-            # Get the possible zombies
-            threads = self.__opened_threads.keys()
+        #while self.__is_running:
+        # Get the possible zombies
+        threads = self.__opened_threads.keys()
 
-            # Make some zombie test
-            for thread in threads:
-                # Sorry bro, they got you
-                if its_8pm:
-                    thread.join()
-                # Its a zombie
-                if not thread.is_alive():
-                    # Kill the zombie!
-                    self.__opened_threads.pop(thread)
+        # Make some zombie test
+        for thread in threads:
+            # Sorry bro, they got you
+            if its_8pm:
+                thread.join()
+            # Its a zombie
+            # if not thread.is_alive():
+            #     # Kill the zombie!
+            #     self.__opened_threads.pop(thread)
 
-            if not its_8pm:
-                time.sleep(self.__rest_time)
+        # if not its_8pm:
+        #     time.sleep(self.__rest_time)
 
         self.__opened_threads = {}

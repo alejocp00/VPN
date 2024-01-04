@@ -267,10 +267,11 @@ class MyVPN:
         options = [
             "1. Start server",
             "2. Create a client",
-            "3. Restrict VLAN",
-            "4. Restrict User",
-            "5. Show log",
-            "6. Stop server",
+            "3. Create VLAN",
+            "4. Restrict VLAN",
+            "5. Restrict User",
+            "6. Show log",
+            "7. Stop server",
         ]
 
         print("\n".join(options))
@@ -285,12 +286,14 @@ class MyVPN:
         elif selected_option == "2":
             self.__create_client_menu()
         elif selected_option == "3":
-            self.__restrict_vlan_menu()
+            self.__create_vlan_menu()
         elif selected_option == "4":
-            self.__restrict_user_menu()
+            self.__restrict_vlan_menu()
         elif selected_option == "5":
-            self.__show_log()
+            self.__restrict_user_menu()
         elif selected_option == "6":
+            self.__show_log()
+        elif selected_option == "7":
             self.__stop_server()
         else:
             self.menu()
@@ -393,6 +396,7 @@ class MyVPN:
         vlan = Vlan(vlanId, vlanIpAddress, vlanMask)
         insert_vlan(vlan)
         self.__insert_vlan_ips(vlan)
+        self.menu()
 
     def __insert_vlan_ips(self, vlan):
         "This function inserts all the ips of the created vlan into the database"

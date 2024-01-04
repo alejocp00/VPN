@@ -61,6 +61,6 @@ def select_no_active_ip_by_vlan(vlanId):
     c = conn.cursor()
     c.execute("SELECT id FROM ips WHERE vlanId=? AND active=0", (vlanId,))
     ipId = c.fetchone()[0]
-    update_active_ip(ipId,1)
     conn.close()
+    update_active_ip(ipId,1)
     return ipId
