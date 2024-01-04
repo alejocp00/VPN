@@ -36,7 +36,7 @@ def exists_vlan(id):
 def is_vlan_full(id):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
-    c.execute("SELECT hostNumber FROM vlans WHERE vlanId=?", (id,))
+    c.execute("SELECT hostNumber FROM vlans WHERE id=?", (id,))
     hostNumber = c.fetchone()[0]
     
     c.execute("SELECT COUNT(*) FROM users WHERE vlanId=?", (id,)
