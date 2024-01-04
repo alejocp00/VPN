@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from common.common_variables import *
-from common.protocols.my_socket import MySocket
-from common.protocols.my_tcp import MyTCP
-from common.protocols.my_udp import MyUDP
-from common.screen_utils import *
-from socket_manager import SocketManager
-from threads_manager import ThreadManager
+from classes.common.common_variables import *
+from classes.common.protocols.my_socket import MySocket
+from classes.common.protocols.my_tcp import MyTCP
+from classes.common.protocols.my_udp import MyUDP
+from classes.common.screen_utils import *
+from classes.socket_manager import SocketManager
+from classes.threads_manager import ThreadManager
 import threading
 
 

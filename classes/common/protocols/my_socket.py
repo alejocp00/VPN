@@ -1,6 +1,6 @@
-from my_tcp import MyTCP
-from my_udp import MyUDP
-from utils import VPNProtocol
+from classes.common.protocols.my_tcp import MyTCP
+from classes.common.protocols.my_udp import MyUDP
+from classes.common.protocols.utils import VPNProtocol
 import socket
 
 

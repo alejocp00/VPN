@@ -1,6 +1,3 @@
-from common.protocols import my_socket
-
-
 class SocketManager:
     def __init__(self):
         self.__sockets = {}

@@ -1,22 +1,18 @@
-import socket
 import threading
-import ipaddress
-from common.common_variables import *
-from common.protocols.my_socket import MySocket
-from common.protocols.my_tcp import MyTCP
-from common.protocols.my_udp import MyUDP
-from common.screen_utils import *
-from log_manager import LogManager
-from socket_manager import SocketManager
-from threads_manager import ThreadManager
-from database.usersDb import *
-from database.vlansDb import *
-from database.ipDb import *
-from database.iprange import *
-from database.vlansIprangeDb import *
-from database.usersIprangeDb import *
-from vlan import Vlan
-from user import User
+from classes.socket_manager import SocketManager
+from classes.common.protocols.my_socket import MySocket
+from classes.common.common_variables import *
+from classes.common.screen_utils import *
+from classes.log_manager import LogManager
+from classes.threads_manager import ThreadManager
+from classes.database.usersDb import *
+from classes.database.vlansDb import *
+from classes.database.ipDb import *
+from classes.database.iprange import *
+from classes.database.vlansIprangeDb import *
+from classes.database.usersIprangeDb import *
+from classes.vlan import Vlan
+from classes.user import User
 
 
 class MyVPN:
@@ -324,7 +320,7 @@ class MyVPN:
             self.__start_server_menu()
 
         # Update protocol server
-        self.protocol = VPNProtocol.TCP if selected_option == 1 else VPNProtocol.UDP
+        self.protocol = VPNProtocol.TCP if selected_option == "1" else VPNProtocol.UDP
 
         # Create socket
         self.__create_socket()
@@ -337,6 +333,8 @@ class MyVPN:
 
         # Set status
         self.__vpn_status = VPNStatus.RUNNING
+
+        return self.menu()
 
     def __create_client_menu(self):
         """Create a client."""
@@ -351,7 +349,7 @@ class MyVPN:
             print("The username inserted already exists")
             self.__create_client_menu()
 
-        client_password = get_password()
+        client_password = get_password(True)
 
         # Get VLAN
         vlan = self.__get_vlan()

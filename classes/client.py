@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from ctypes import util
 from tkinter import Menu
-from common.common_variables import *
-from common.protocols.my_socket import MySocket
-from common.protocols.my_tcp import MyTCP
-from common.protocols.my_udp import MyUDP
-from common.screen_utils import *
+from classes.common.common_variables import *
+from classes.common.protocols.my_socket import MySocket
+from classes.common.protocols.my_tcp import MyTCP
+from classes.common.protocols.my_udp import MyUDP
+from classes.common.screen_utils import *
 
 
 class Client(metaclass=ABCMeta):

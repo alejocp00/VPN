@@ -1,4 +1,3 @@
-from common.protocols.my_socket import MySocket
 import socket
 
 
