@@ -356,9 +356,8 @@ class MyVPN:
 
         # Get VLAN
         vlan = self.__get_vlan()
-        userIp = get_ip_address()
 
-        user = User(client_user_name, client_password, userIp, vlan)
+        user = User(client_user_name, client_password, vlan)
         assignedIp = select_no_active_ip_by_vlan(vlan)
 
         insert_user(user, assignedIp)
