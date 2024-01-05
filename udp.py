@@ -127,16 +127,14 @@ class UDP:
             udp_psuedo = struct.pack('!BB5H', zero, protocol, packet['udp_length'], packet['src_port'], packet['dest_port'], packet['udp_length'], 0)
             
             verify = self.verify_checksum(ip_addr + udp_psuedo + packet['data'].encode(), packet['UDP_checksum'])
-            print(packet['data'])
-            print(src_addr)
-            print(verify)
-            print(packet['UDP_checksum'])
+    
+            if src_addr == ('127.0.0.53', 0):
+                continue
             if verify == 0xFFFF:
-                print(packet['data'])
-                return data, src_addr
+                return packet['data'], src_addr
             else:
                 print('Checksum Error!Packet is discarded')
-                return "",""   ##############cambiar aqui segun lo que sea necesario
+                return "",""
 
     def verify_checksum(self,data, checksum):
         data_len = len(data)
