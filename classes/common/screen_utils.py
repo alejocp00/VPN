@@ -78,7 +78,7 @@ def get_ip_range():
     # Check if the range is valid
     octants = ip_range.split(".")
 
-    if octants.count != 4:
+    if len(octants) != 4:
         get_ip_range()
 
     for octant in octants:
