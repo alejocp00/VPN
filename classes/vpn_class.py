@@ -49,7 +49,7 @@ class MyVPN:
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
-    def __create_fake_socket(self, client_address, ip_server, port_server):
+    def __create_fake_socket(self, client_username, ip_server, port_server):
         "This method create a fake socket for the client"
 
         # Create a fake socket
@@ -57,11 +57,11 @@ class MyVPN:
 
         # Get the fake ip and port
 
-        fake_ip = self.__extract_fake_ip(client_address)
+        fake_ip = self.__extract_fake_ip(client_username)
 
         # Bind the fake socket to the fake ip and port
 
-        fake_socket.bind((fake_ip, 0))  # 0 means auto assign port
+        fake_socket.bind((fake_ip, 0))  # 0 means auto-assign port
 
         # Connect the fake socket to the server
 
@@ -72,9 +72,9 @@ class MyVPN:
 
         return fake_socket
 
-    def __extract_fake_ip(self, client_address):
-        "This method extract the client fake ip and port"
-        return get_assigned_ip_by_original_ip(client_address)
+    def __extract_fake_ip(self, client_username):
+        "This method extract the client fake ip"
+        return get_assigned_ip_by_original_ip(client_username)
 
     def __process_data(self, data):
         "This method process the data received from the client"
@@ -132,31 +132,47 @@ class MyVPN:
     def __tcp_server_process(self):
         "This method is the main process of the server, it will be running until the server is stopped"
         while self.__vpn_status == VPNStatus.RUNNING:
+
             # Accept a connection
             client_socket, client_address = self.__socket.accept()
-
-            # Add the socket to the socket manager
-            self.__socket_manager.add_socket(client_socket, client_address)
 
             # Add to log
             self.__log_manager.add_log("New connection from: " + str(client_address))
 
+            # Send login
+            client_username,client_password=self.login(client_address)
+
+            # Check if user exists
+            if(not self.is_valid_user(client_username,client_password)):
+                self.__socket.send("Not valid user")
+                self.__log_manager.add_log("Registration denied:("+ str(client_address)+")")
+                continue
+            self.__socket.send("Accepted")
+
+            # Recieve server ip and port
+            server_ip,server_port=self.destination(client_address)
+
+            self.__log_manager.add_log("Registration accepted:("+ str(client_address)+")")
+
+            # Add the socket to the socket manager
+            self.__socket_manager.add_socket(client_socket, client_address)
+
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__tcp_client_process, args=(client_socket, client_address)
+                target=self.__tcp_client_process, args=(client_socket, client_address,client_username,server_ip,server_port)
             )
             client_thread.start()
 
             # Add the thread to the thread manager
             self.__thread_manager.add_thread(client_thread, "client")
 
-    def __tcp_client_process(self, client_socket, client_address):
+    def __tcp_client_process(self, client_socket, client_address,client_username,server_ip,server_port):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # fix: ip_server and port_server
+        # Extracting new client IP
 
         fake_client_socket = self.__create_fake_socket(
-            client_address, ip_server, port_server
+            client_username, server_ip, server_port
         )
 
         # Add the fake socket to the socket manager
@@ -200,24 +216,40 @@ class MyVPN:
             recv_data, client_address = self.__socket.recv(1024)
 
             # Add to log
-            self.__log_manager.add_log("Data received from: " + str(client_address))
+            self.__log_manager.add_log("New connection from: " + str(client_address))
+
+            # Send login
+            client_username,client_password=self.login(client_address)
+
+            # Check if user exists
+            if(not self.is_valid_user(client_username,client_password)):
+                self.__socket.send("Not valid user",client_address)
+                self.__log_manager.add_log("Registration denied:("+ str(client_address)+")")
+                continue
+            self.__socket.send("Accepted",client_address)
+
+            # Recieve server ip and port
+
+            server_ip,server_port=self.destination(client_address)
+
+            self.__log_manager.add_log("Registration accepted:("+ str(client_address)+")")
 
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__udp_client_process, args=[client_address]
+                target=self.__udp_client_process, args=(client_address,server_ip,server_port)
             )
             client_thread.start()
 
             # Add the thread to the thread manager
             self.__thread_manager.add_thread(client_thread, "client")
 
-    def __udp_client_process(self, client_address):
+    def __udp_client_process(self, client_address,server_ip,server_port):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # fix: ip_server and port_server
+        # Extracting new client IP
 
         fake_client_socket = self.__create_fake_socket(
-            client_address, ip_server, port_server
+            client_address, server_ip, server_port
         )
 
         # Add the fake socket to the socket manager
@@ -461,3 +493,40 @@ class MyVPN:
         if password != select_user_password(username):
             return False
         return True
+    
+    def login(self,client_address):
+
+        message="Enter Username"
+        message2="Enter Password"
+
+        if self.protocol== VPNProtocol.TCP:
+            self.__socket.send(message)
+            username=self.__socket.recv(1024)
+            self.__socket.send(message2)
+            password=self.__socket.recv(1024)
+
+        else:
+            self.__socket.send(message, client_address)
+            username=self.__socket.recv(1024)
+            self.__socket.send(message2,client_address)
+            password=self.__socket.recv(1024)
+
+        return username,password
+    
+    def destination(self,client_address):
+        message="Enter server destination IP"
+        message2="Enter port"
+
+        if self.protocol== VPNProtocol.TCP:
+            self.__socket.send(message)
+            ip=self.__socket.recv(1024)
+            self.__socket.send(message2)
+            port=self.__socket.recv(1024)
+
+        else:
+            self.__socket.send(message, client_address)
+            ip=self.__socket.recv(1024)
+            self.__socket.send(message2,client_address)
+            port=self.__socket.recv(1024)
+
+        return ip,port
