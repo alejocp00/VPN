@@ -97,18 +97,21 @@ def get_ip_range():
 
     return ip_range
 
+
 def validate_ip_address(ip):
-   "This function verifies if the input is a valid ip address"
-   try:
-       ip_object = ipaddress.ip_address(ip)
-       return True
-   except ValueError:
-       return False
-   
+    "This function verifies if the input is a valid ip address"
+    try:
+        ip_object = ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
+
 def validate_mask(mask):
     "This function verifies if the input is a valid mask"
     # ToDo: implementar validacion de la mascara que pasa el usuario
     pass
+
 
 def get_ip_address():
     "Ask user for the vlan ip address"
@@ -120,9 +123,10 @@ def get_ip_address():
 
     return ip_address
 
+
 def get_mask():
     "Ask user for the vlan mask"
     mask = input("Enter a valid mask:")
 
-    #habria que validar la mask
+    # habria que validar la mask
     return mask
