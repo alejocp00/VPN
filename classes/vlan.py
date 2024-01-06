@@ -24,6 +24,5 @@ class Vlan():
     
     def get_all_ips(self):
         networkc = ipaddress.IPv4Network(self.network + '/' + self.mask, strict=False)
-        print(networkc)
         ips = networkc.hosts()
         return ips

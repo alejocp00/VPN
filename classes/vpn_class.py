@@ -71,9 +71,9 @@ class MyVPN:
 
         return fake_socket
 
-    def __extract_fake_ip(self, client_address):
-        "This method extract the client fake ip and port"
-        return get_assigned_ip_by_original_ip(client_address)
+    def __extract_fake_ip(self, client_username):
+        "This method extract the client fake ip"
+        return get_assigned_ip_by_name(client_username)
 
     def __process_data(self, data):
         "This method process the data received from the client"
@@ -361,10 +361,8 @@ class MyVPN:
 
         # Get VLAN
         vlan = self.__get_vlan()
-        # Todo: Remove userIp from user class
-        userIp = get_ip_address()
 
-        user = User(client_user_name, client_password, userIp, vlan)
+        user = User(client_user_name, client_password, vlan)
         assignedIp = select_no_active_ip_by_vlan(vlan)
 
         insert_user(user, assignedIp)

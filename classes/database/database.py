@@ -7,7 +7,6 @@ c.execute("""CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        userIp VARCHAR NOT NULL,
         vlanId INTEGER NOT NULL,
         ipId INTEGER NOT NULL,
         FOREIGN KEY (vlanId) REFERENCES vlans (id),
@@ -23,7 +22,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS vlans(
           
 c.execute("""CREATE TABLE IF NOT EXISTS iprange(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        rangeIp VARCHAR NOT NULL UNIQUE
+        rangeIp VARCHAR NOT NULL
 )""")
           
 c.execute("""CREATE TABLE IF NOT EXISTS ips(
