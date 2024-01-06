@@ -18,7 +18,6 @@ from classes.user import User
 class MyVPN:
     def __init__(self):
         # Todo: Add the code to initialize the class
-        self.is_running = False
         self.protocol = VPNProtocol.UNKNOWN
         self.port = VPN_SERVER_PORT
         self.ip = VPN_SERVER_IP
@@ -123,7 +122,7 @@ class MyVPN:
 
         self.__vpn_status = VPNStatus.IDLE
 
-        self.menu
+        self.menu()
 
     #########
     #  TCP  #
@@ -258,7 +257,11 @@ class MyVPN:
         clear_screen()
 
         print("VPN Server")
-        print("Current state: {}".format("Running" if self.is_running else "Stopped"))
+        print(
+            "Current state: {}".format(
+                "Running" if self.__vpn_status == VPNStatus.RUNNING else "Stopped"
+            )
+        )
         print("Current protocol: {}".format(self.protocol))
         print("Current port: {}".format(self.port))
         print("Current IP: {}".format(self.ip))
@@ -282,6 +285,8 @@ class MyVPN:
             self.menu()
 
         if selected_option == "1":
+            if self.is_running:
+                self.menu()
             self.__start_server_menu()
         elif selected_option == "2":
             self.__create_client_menu()
@@ -356,6 +361,7 @@ class MyVPN:
 
         # Get VLAN
         vlan = self.__get_vlan()
+        # Todo: Remove userIp from user class
         userIp = get_ip_address()
 
         user = User(client_user_name, client_password, userIp, vlan)
@@ -407,6 +413,8 @@ class MyVPN:
 
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
+
+        # Todo: get a list with all the vlans and show it to the user enumerated
 
         # Get vlan info
         vlan_temporal = get_id()
