@@ -18,15 +18,12 @@ class MySocket:
 
         self.protocol = protocol
 
-        # fix: need to be raw
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
         # Todo: Implement
         pass
 
     def close(self):
         # Todo:implement close socket function
-        self._socket.close()
+        self._protocol.close()
 
     def bind(self, address):
         self._protocol.bind(address)
@@ -35,7 +32,7 @@ class MySocket:
         self._protocol.listen()
 
     def accept(self):
-        return self._socket.accept()
+        return self._protocol.accept()
 
     def connect(self, address):
         self._protocol.connect(address)
@@ -44,13 +41,13 @@ class MySocket:
         if self.protocol == VPNProtocol.UDP:
             self._protocol.send(data)
         else:
-            self._socket.send(data)
+            self._protocol.send(data)
 
     def recv(self, buffer_size):
         return self._protocol.recv(buffer_size)
 
     def sendall(self, data):
-        self._socket.sendall(data)
+        self._protocol.sendall(data)
 
     def getsockname(self):
         return self._protocol.getsockname()
