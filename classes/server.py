@@ -142,6 +142,9 @@ class Server(metaclass=ABCMeta):
     def menu(self):
         """Show the menu."""
 
+        print("TCP port: " + str(self.__tcp_port))
+        print("UDP port: " + str(self.__udp_port))
+
         options = ["1. Start the service", "2. End the service"]
 
         print("\n".join(options))
