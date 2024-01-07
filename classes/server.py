@@ -22,6 +22,8 @@ class Server(metaclass=ABCMeta):
     def _start_server(self):
         """Activate the server."""
 
+        self.__server_status = VPNStatus.RUNNING
+
         # Create the socket
         self._create_sockets()
 
@@ -44,8 +46,6 @@ class Server(metaclass=ABCMeta):
 
         self.__thread_manager.add_thread(server_tcp_thread, "server_tcp")
         self.__thread_manager.add_thread(server_udp_thread, "server_udp")
-
-        self.__server_status = VPNStatus.RUNNING
 
         self.menu()
 
