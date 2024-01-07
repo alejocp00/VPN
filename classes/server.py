@@ -95,7 +95,8 @@ class Server(metaclass=ABCMeta):
             if recv_data:
                 # Create a thread to handle the client
                 client_thread = threading.Thread(
-                    target=self.__udp_client_process, args=[recv_data, client_address]
+                    target=self.__udp_client_process,
+                    args=[recv_data.decode(), client_address],
                 )
                 client_thread.start()
 
@@ -107,7 +108,7 @@ class Server(metaclass=ABCMeta):
     def __udp_client_process(self, data, client_address):
         """Process the data received from the client."""
         # Receive the data in small chunks and retransmit it
-        result = self._server_function(data.decode(), self.__socket_udp, client_address)
+        result = self._server_function(data, self.__socket_udp, client_address)
         msg = self._result_msg(result)
         # Send the data to the client
         self.__socket_udp.sendto(msg.encode(), client_address)
