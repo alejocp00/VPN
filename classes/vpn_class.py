@@ -200,19 +200,7 @@ class MyVPN:
     def __tcp_client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # fix: ip_server and port_server
-
-        fake_client_socket = self.__create_fake_socket(
-            client_address, ip_server, port_server
-        )
-
-        # Add the fake socket to the socket manager
-
-        self.__socket_manager.add_socket(fake_client_socket, client_address)
-
         while self.__vpn_status == VPNStatus.RUNNING:
-            # fix: implement correctly send and recv
-
             # Receive the data
             data = client_socket.recv(1024)
 
@@ -478,9 +466,9 @@ class MyVPN:
             self.__restrict_vlan_menu()
 
         ipRange = get_ip_range()
-        insert_iprange(ipRange)
-        ipRangeId = select_id_for_iprange(ipRange)
-        insert_vlanIprange(vlan_temporal, ipRangeId)
+        insert_ip_range(ipRange)
+        ipRangeId = select_id_for_ip_range(ipRange)
+        insert_vlan_ip_range(vlan_temporal, ipRangeId)
 
         self.menu()
 
@@ -496,10 +484,10 @@ class MyVPN:
             self.__restrict_user_menu()
 
         ipRange = get_ip_range()
-        insert_iprange(ipRange)
-        ipRangeId = select_id_for_iprange(ipRange)
+        insert_ip_range(ipRange)
+        ipRangeId = select_id_for_ip_range(ipRange)
 
-        insert_userIprange(userId, ipRangeId)
+        insert_user_ip_range(userId, ipRangeId)
         return self.menu()
 
     def __is_in_range(self, ip, ipRange):

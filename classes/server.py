@@ -107,6 +107,7 @@ class Server(metaclass=ABCMeta):
 
     def __udp_client_process(self, data, client_address):
         """Process the data received from the client."""
+        # Todo: delete this
         print("AQUI")
         # Receive the data in small chunks and retransmit it
         result = self._server_function(data, self.__socket_udp, client_address)
