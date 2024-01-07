@@ -91,8 +91,7 @@ class Server(metaclass=ABCMeta):
         """Receive data from clients."""
 
         while self.__server_status == VPNStatus.RUNNING:
-            recv_data, client_address = self.__socket_udp.recv(1024)
-            print(client_address)
+            recv_data, client_address = self.__socket_udp.recvfrom(1024)
             if recv_data:
                 # Create a thread to handle the client
                 client_thread = threading.Thread(
@@ -107,13 +106,11 @@ class Server(metaclass=ABCMeta):
 
     def __udp_client_process(self, data, client_address):
         """Process the data received from the client."""
-        # Todo: delete this
-        print("AQUI")
         # Receive the data in small chunks and retransmit it
-        result = self._server_function(data, self.__socket_udp, client_address)
+        result = self._server_function(data.decode(), self.__socket_udp, client_address)
         msg = self._result_msg(result)
         # Send the data to the client
-        self.__socket_udp.send(msg.encode(), client_address)
+        self.__socket_udp.sendto(msg.encode(), client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
