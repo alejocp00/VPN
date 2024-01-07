@@ -48,28 +48,28 @@ class MyVPN:
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
-    def __create_fake_socket(self, client_address, ip_server, port_server):
-        "This method create a fake socket for the client"
+    # def __create_fake_socket(self, client_address, ip_server, port_server):
+    #     "This method create a fake socket for the client"
 
-        # Create a fake socket
-        fake_socket = MySocket(self.protocol)
+    #     # Create a fake socket
+    #     fake_socket = MySocket(self.protocol)
 
-        # Get the fake ip and port
+    #     # Get the fake ip and port
 
-        fake_ip = self.__extract_fake_ip(client_address)
+    #     fake_ip = self.__extract_fake_ip(client_address)
 
-        # Bind the fake socket to the fake ip and port
+    #     # Bind the fake socket to the fake ip and port
 
-        fake_socket.bind((fake_ip, 0))  # 0 means auto assign port
+    #     fake_socket.bind((fake_ip, 0))  # 0 means auto assign port
 
-        # Connect the fake socket to the server
+    #     # Connect the fake socket to the server
 
-        if self.protocol == VPNProtocol.TCP:
-            fake_socket.connect((ip_server, port_server))
+    #     if self.protocol == VPNProtocol.TCP:
+    #         fake_socket.connect((ip_server, port_server))
 
-        # Return the fake socket
+    #     # Return the fake socket
 
-        return fake_socket
+    #     return fake_socket
 
     def __extract_fake_ip(self, client_username):
         "This method extract the client fake ip"
@@ -79,27 +79,23 @@ class MyVPN:
         "This method process the data received from the client"
         if data is None:
             return
-        
 
         # Check if the data is a login request
         if data[0] == REQUEST_LOGIN_HEADER:
-            
             # Check if the user is valid
             if self.__is_valid_user(data[1], data[2]):
                 # Send the response to the client with the ip assigned
                 # Get the ip assigned to the user
-                
+
                 ip = get_assigned_ip_by_name(data[1])
-                
+
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
-                
 
                 # Send the response
                 self.__socket_manager.get_socket_by_name(client_address).send(
                     msg.encode()
                 )
-
 
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
@@ -113,6 +109,7 @@ class MyVPN:
             temp_socket.connect((ip_server, port_server))
             # Send the data to the server
             temp_socket.send(data_to_send.encode())
+            self.__socket_manager.add_socket(temp_socket, client_address)
             # Receive the response from the server
             response = temp_socket.recv(1024)
             # Process the response
@@ -247,7 +244,10 @@ class MyVPN:
 
             # Add to log
             self.__log_manager.add_log("Data received from: " + str(client_address))
-
+            # Todo: change to the correct socket
+            response_socket = MySocket(VPNProtocol.UDP)
+            response_socket.bind((self.ip, 0))
+            self.__socket_manager.add_socket(response_socket, str(client_address))
             # Create a thread to handle the client
             client_thread = threading.Thread(
                 target=self.__udp_client_process, args=[recv_data, client_address]
