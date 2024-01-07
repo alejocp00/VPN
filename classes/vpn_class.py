@@ -75,10 +75,56 @@ class MyVPN:
         "This method extract the client fake ip"
         return get_assigned_ip_by_name(client_username)
 
-    def __process_data(self, data):
+    def __process_data(self, data, protocol: VPNProtocol, client_address):
         "This method process the data received from the client"
-        # Todo: Is this necessary? R/por ahora no,pero lo mas posible es que si
-        pass
+        if data is None:
+            return
+
+        # Check if the data is a login request
+        if data[0] == REQUEST_LOGIN_HEADER:
+            # Check if the user is valid
+            if self.__is_valid_user(data[1], data[2]):
+                # Send the response to the client with the ip assigned
+                # Get the ip assigned to the user
+                ip = get_assigned_ip_by_name(data[1])
+                # Create the response message
+                msg = self.__accepted_login_response(ip, protocol)
+
+                # Send the response
+                self.__socket_manager.get_socket_by_name(client_address).send(msg)
+
+        elif data[0] == REQUEST_PACKAGE_HEADER:
+            # Get the ip and port of the server
+            ip_server = data[1]
+            port_server = data[2]
+            # Get the data to send
+            data_to_send = data[3]
+            # Create a socket to connect to the server
+            temp_socket = MySocket(protocol)
+            # Connect the socket to the server
+            temp_socket.connect((ip_server, port_server))
+            # Send the data to the server
+            temp_socket.send(data_to_send)
+            # Receive the response from the server
+            response = temp_socket.recv(1024)
+            # Process the response
+            decoded_response = self.__decode_data(response)
+            self.__process_data(decoded_response, protocol, client_address)
+
+        elif data[0] == REQUEST_RESPONSE_HEADER:
+            # Get the response
+            response = data[1]
+            # Send the response to the client
+            self.__socket_manager.get_socket_by_name(client_address).send(response)
+
+    def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
+        "This method create the response message for a login request"
+        response = (
+            REQUEST_ACCEPTED_HEADER + REQUEST_SEPARATOR + ip + REQUEST_SEPARATOR + "tcp"
+            if protocol == VPNProtocol.TCP
+            else "udp"
+        )
+        return response
 
     def __show_log(self):
         """Show the log."""
@@ -147,7 +193,9 @@ class MyVPN:
             client_thread.start()
 
             # Add the thread to the thread manager
-            self.__thread_manager.add_thread(client_thread, "client")
+            self.__thread_manager.add_thread(
+                client_thread, "tcp_client_" + str(client_address)
+            )
 
     def __tcp_client_process(self, client_socket, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
@@ -173,18 +221,19 @@ class MyVPN:
                 break
 
             # Process the data
-            self.__process_data(data)
+            decoded_data = self.__decode_data(data)
+            if not decoded_data:
+                break
+            self.__process_data(decoded_data, VPNProtocol.TCP, client_socket)
 
         # Close the socket
         client_socket.close()
-        fake_client_socket.close()
 
         # Add to log
         self.__log_manager.add_log("Connection closed with: " + str(client_address))
 
         # Remove the socket from the socket manager
         self.__socket_manager.remove_socket(client_socket)
-        self.__socket_manager.remove_socket(fake_client_socket)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
@@ -213,38 +262,43 @@ class MyVPN:
     def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # fix: ip_server and port_server
-
-        fake_client_socket = self.__create_fake_socket(
-            client_address, ip_server, port_server
-        )
-
         # Add the fake socket to the socket manager
 
-        self.__socket_manager.add_socket(fake_client_socket, client_address)
-
         while self.__vpn_status == VPNStatus.RUNNING:
-            # fix: implement correctly send and recv
-
             # Receive the data
 
-            data, server_address = fake_client_socket.recv(1024)
-
-            # If the client is disconnected
-            if not data:
-                break
+            decoded_data = self.__decode_data(data)
 
             # Process the data
-            self.__process_data(data)
-
-        # Close the socket
-        fake_client_socket.close()
-
-        # Remove the socket from the socket manager
-        self.__socket_manager.remove_socket(fake_client_socket)
+            self.__process_data(decoded_data, VPNProtocol.UDP, client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
+
+    def __decode_data(self, data):
+        "This method decode the data received from the client"
+        split_data = data.split(REQUEST_SEPARATOR)
+
+        if not split_data:
+            return None
+
+        # Get login request
+        if split_data[0] == REQUEST_LOGIN_HEADER:
+            usr = split_data[1]
+            pwd = split_data[2].decode()
+            return (REQUEST_LOGIN_HEADER, usr, pwd)
+
+        # Get normal request
+        if split_data[0] == REQUEST_PACKAGE_HEADER:
+            ip_server = split_data[1]
+            port_server = split_data[2]
+            data_to_send = split_data[3]
+            return (REQUEST_PACKAGE_HEADER, ip_server, port_server, data_to_send)
+
+        # Get server response
+        if split_data[0] == REQUEST_RESPONSE_HEADER:
+            response = split_data[1]
+            return (REQUEST_RESPONSE_HEADER, response)
 
     #########
     # MENUS #
@@ -285,7 +339,7 @@ class MyVPN:
             self.menu()
 
         if selected_option == "1":
-            if self.is_running:
+            if self.__vpn_status == VPNStatus.RUNNING:
                 self.menu()
             self.__start_server_menu()
         elif selected_option == "2":
@@ -336,11 +390,12 @@ class MyVPN:
         # Activate socket
         self.__activate_socket()
 
+        self.__vpn_status = VPNStatus.RUNNING
+
         # Create process thread
         self.__run_server()
 
         # Set status
-        self.__vpn_status = VPNStatus.RUNNING
 
         return self.menu()
 
@@ -460,7 +515,7 @@ class MyVPN:
 
         return True
 
-    def is_valid_user(self, username, password):
+    def __is_valid_user(self, username, password):
         existingUser = exists_user(username)
         if not existingUser:
             return False
