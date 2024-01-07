@@ -269,7 +269,7 @@ class MyVPN:
 
     def __decode_data(self, data):
         "This method decode the data received from the client"
-        split_data = data.split(REQUEST_SEPARATOR)
+        split_data = data.decode().split(REQUEST_SEPARATOR)
 
         if not split_data:
             return None
