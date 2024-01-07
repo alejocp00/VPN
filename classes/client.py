@@ -27,17 +27,14 @@ class Client(metaclass=ABCMeta):
         self.__password = get_password() if self.__password == "" else self.__password
 
         # Perform first connection with the vpn
-        received_data = self.__perform_first_connection()
-
-        # Parse the received data
-        self.__set_configuration(received_data)
+        self.__perform_first_connection()
 
         # Connect to the server
         self._connect_to_server()
 
     def _connect_to_server(self):
         """Connect to the server."""
-
+        self.__socket = MySocket(self._config["protocol"])
         self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
     def __perform_first_connection(self):
