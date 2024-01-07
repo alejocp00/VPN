@@ -7,8 +7,8 @@ class MyTCP:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
 
-    def bind(self, ip, port):
-        self.socket.bind((ip, port))
+    def bind(self, addr):
+        self.socket.bind(addr)
 
     def listen(self):
         self.socket.listen()
@@ -27,3 +27,6 @@ class MyTCP:
 
     def connect(self, address: tuple[int, int]):
         self.socket.connect(address)
+
+    def getsockname(self):
+        return self.socket.getsockname()

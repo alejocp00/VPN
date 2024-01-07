@@ -17,7 +17,7 @@ class Server(metaclass=ABCMeta):
         self.__udp_port = None
         self.__thread_manager = ThreadManager()
         self.__socket_manager = SocketManager()
-        self.__vpn_status = VPNStatus.IDLE
+        self.__server_status = VPNStatus.IDLE
 
     def _start_server(self):
         """Activate the server."""
@@ -45,10 +45,13 @@ class Server(metaclass=ABCMeta):
         self.__thread_manager.add_thread(server_tcp_thread, "server_tcp")
         self.__thread_manager.add_thread(server_udp_thread, "server_udp")
 
+        self.__server_status = VPNStatus.RUNNING
+
+        self.menu()
+
     def _wait_for_connection(self):
         """Wait for a connection from a client."""
-
-        while self.__vpn_status == VPNStatus.RUNNING:
+        while self.__server_status == VPNStatus.RUNNING:
             client_socket, client_address = self.__socket_tcp.accept()
 
             # Add the socket to the socket manager
@@ -87,28 +90,29 @@ class Server(metaclass=ABCMeta):
     def _udp_receive_data(self):
         """Receive data from clients."""
 
-        while self.__vpn_status == VPNStatus.RUNNING:
+        while self.__server_status == VPNStatus.RUNNING:
             recv_data, client_address = self.__socket_udp.recv(1024)
+            print(client_address)
+            if recv_data:
+                # Create a thread to handle the client
+                client_thread = threading.Thread(
+                    target=self.__udp_client_process, args=[recv_data, client_address]
+                )
+                client_thread.start()
 
-            # Create a thread to handle the client
-            client_thread = threading.Thread(
-                target=self.__udp_client_process, args=[recv_data, client_address]
-            )
-            client_thread.start()
-
-            # Add the thread to the thread manager
-            self.__thread_manager.add_thread(
-                client_thread, "client_" + str(client_address)
-            )
+                # Add the thread to the thread manager
+                self.__thread_manager.add_thread(
+                    client_thread, "client_" + str(client_address)
+                )
 
     def __udp_client_process(self, data, client_address):
         """Process the data received from the client."""
-
+        print("AQUI")
         # Receive the data in small chunks and retransmit it
         result = self._server_function(data, self.__socket_udp, client_address)
 
         # Send the data to the client
-        self.__socket_udp.send(result.encode())
+        self.__socket_udp.send(result.encode(), client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
@@ -116,13 +120,14 @@ class Server(metaclass=ABCMeta):
     def _create_sockets(self):
         """Create the server socket."""
         self.__socket_tcp = MySocket(VPNProtocol.TCP)
-        self.__socket_udp = MySocket(VPNProtocol.UDP)
+        # self.__socket_udp = MySocket(VPNProtocol.UDP)
+        self.__socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def _stop_server(self):
         """Stop the server."""
 
         # Set the vpn status
-        self.__vpn_status = VPNStatus.SHUTING_DOWN
+        self.__server_status = VPNStatus.SHUTING_DOWN
 
         # Close all sockets
         self.__socket_manager.clear()
@@ -130,7 +135,10 @@ class Server(metaclass=ABCMeta):
         # Close Threads
         self.__thread_manager.dying_light(True)
 
-        self.__vpn_status = VPNStatus.IDLE
+        self.__server_status = VPNStatus.IDLE
+
+        self.__tcp_port = None
+        self.__udp_port = None
 
         self.menu()
 
@@ -141,7 +149,8 @@ class Server(metaclass=ABCMeta):
 
     def menu(self):
         """Show the menu."""
-
+        clear_screen()
+        print("Server IP: " + self.__server_ip)
         print("TCP port: " + str(self.__tcp_port))
         print("UDP port: " + str(self.__udp_port))
 
@@ -156,6 +165,10 @@ class Server(metaclass=ABCMeta):
             self.menu()
 
         if option == "1":
+            if self.__server_status == VPNStatus.RUNNING:
+                print("The service is already running")
+                input("Press enter to continue...")
+                self.menu()
             self._start_server()
         elif option == "2":
             self._stop_server()

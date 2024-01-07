@@ -6,7 +6,7 @@ class SumClient(Client):
     def __init__(self):
         super().__init__()
 
-    def execute_function(self):
+    def execute_function(self, ip, port):
         """Execute the function."""
         # Get the numbers
         num1 = self.__get_number()

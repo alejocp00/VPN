@@ -108,7 +108,7 @@ class Client(metaclass=ABCMeta):
         self._socket.close()
 
     @abstractmethod
-    def execute_function(self):
+    def execute_function(self, ip, port):
         """Execute the client function."""
         pass
 
@@ -132,7 +132,7 @@ class Client(metaclass=ABCMeta):
             self.connect()
         elif option == "2":
             # Todo: Check if the client is connected
-            self.execute_function()
+            self.execute_function(get_ip_address(), input("port: "))
         elif option == "3":
             self.disconnect()
         else:

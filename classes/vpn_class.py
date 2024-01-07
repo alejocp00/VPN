@@ -203,14 +203,14 @@ class MyVPN:
 
             # Create a thread to handle the client
             client_thread = threading.Thread(
-                target=self.__udp_client_process, args=[client_address]
+                target=self.__udp_client_process, args=[recv_data, client_address]
             )
             client_thread.start()
 
             # Add the thread to the thread manager
             self.__thread_manager.add_thread(client_thread, "client")
 
-    def __udp_client_process(self, client_address):
+    def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
         # fix: ip_server and port_server
