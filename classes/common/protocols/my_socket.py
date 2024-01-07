@@ -44,3 +44,6 @@ class MySocket:
 
     def sendall(self, data):
         self._socket.sendall(data)
+
+    def getsockname(self):
+        return self._socket.getsockname()
