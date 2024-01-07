@@ -6,7 +6,7 @@ from classes.common.protocols.utils import VPNProtocol
 socket = MySocket(VPNProtocol.UDP)
 socket.bind(("127.0.0.4", 0))
 
-socket.connect(("localhost", 61617))
+socket.connect(("localhost", 51697))
 
 print("Enviando")
 socket.send("2,2".encode())
