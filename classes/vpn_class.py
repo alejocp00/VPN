@@ -79,21 +79,27 @@ class MyVPN:
         "This method process the data received from the client"
         if data is None:
             return
+        
 
         # Check if the data is a login request
         if data[0] == REQUEST_LOGIN_HEADER:
+            
             # Check if the user is valid
             if self.__is_valid_user(data[1], data[2]):
                 # Send the response to the client with the ip assigned
                 # Get the ip assigned to the user
+                
                 ip = get_assigned_ip_by_name(data[1])
+                
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
+                
 
                 # Send the response
                 self.__socket_manager.get_socket_by_name(client_address).send(
                     msg.encode()
                 )
+
 
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
@@ -277,7 +283,9 @@ class MyVPN:
         # Get login request
         if split_data[0] == REQUEST_LOGIN_HEADER:
             usr = split_data[1]
-            pwd = split_data[2].decode()
+            pwd = split_data[2]
+            print(usr)
+            print(pwd)
             return (REQUEST_LOGIN_HEADER, usr, pwd)
 
         # Get normal request

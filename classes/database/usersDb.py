@@ -36,7 +36,7 @@ def get_assigned_ip_by_name(name):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
     c.execute("SELECT ips.ip FROM users INNER JOIN ips ON users.ipId=ips.id WHERE users.name=?", (name,))
-    assigned_ip = c.fetchone()
+    assigned_ip = c.fetchone()[0]
     conn.close()
     return assigned_ip
 
