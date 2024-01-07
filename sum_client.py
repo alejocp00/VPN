@@ -37,3 +37,6 @@ class SumClient(Client):
                 print("Please enter a valid number")
 
         return number
+
+
+SumClient().menu()
