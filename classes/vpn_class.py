@@ -219,7 +219,7 @@ class MyVPN:
             decoded_data = self.__decode_data(data)
             if not decoded_data:
                 break
-            self.__process_data(decoded_data, VPNProtocol.TCP, client_socket)
+            self.__process_data(decoded_data, VPNProtocol.TCP, client_address)
 
         # Close the socket
         client_socket.close()
