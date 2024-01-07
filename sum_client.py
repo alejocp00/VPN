@@ -17,7 +17,7 @@ class SumClient(Client):
         print("Sending the numbers to the server...")
 
         # Send the numbers to the server
-        self._send_data(data, ip, port)
+        self._send_data(ip, port, data)
 
         print("Waiting for the result...")
         # Receive the result

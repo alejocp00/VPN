@@ -100,7 +100,7 @@ class MyVPN:
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
             ip_server = data[1]
-            port_server = data[2]
+            port_server = int(data[2])
             # Get the data to send
             data_to_send = data[3]
             # Create a socket to connect to the server

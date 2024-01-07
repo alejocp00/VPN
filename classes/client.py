@@ -32,6 +32,8 @@ class Client(metaclass=ABCMeta):
         # Connect to the server
         self._connect_to_server()
 
+        self.menu()
+
     def _connect_to_server(self):
         """Connect to the server."""
         self.__socket = MySocket(self._config["protocol"])
