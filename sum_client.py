@@ -17,11 +17,11 @@ class SumClient(Client):
         print("Sending the numbers to the server...")
 
         # Send the numbers to the server
-        self._socket.send(data.encode())
+        self._send_data(data, ip, port)
 
         print("Waiting for the result...")
         # Receive the result
-        result = self._socket.recv(1024).decode()
+        result = self._receive_data()
 
         # Print the result
         print(f"The result is: {result}")
