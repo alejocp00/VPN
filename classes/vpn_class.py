@@ -91,7 +91,9 @@ class MyVPN:
                 msg = self.__accepted_login_response(ip, protocol)
 
                 # Send the response
-                self.__socket_manager.get_socket_by_name(client_address).send(msg)
+                self.__socket_manager.get_socket_by_name(client_address).send(
+                    msg.encode()
+                )
 
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
@@ -104,7 +106,7 @@ class MyVPN:
             # Connect the socket to the server
             temp_socket.connect((ip_server, port_server))
             # Send the data to the server
-            temp_socket.send(data_to_send)
+            temp_socket.send(data_to_send.encode())
             # Receive the response from the server
             response = temp_socket.recv(1024)
             # Process the response
@@ -115,7 +117,9 @@ class MyVPN:
             # Get the response
             response = data[1]
             # Send the response to the client
-            self.__socket_manager.get_socket_by_name(client_address).send(response)
+            self.__socket_manager.get_socket_by_name(client_address).send(
+                response.encode()
+            )
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
