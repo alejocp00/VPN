@@ -120,7 +120,8 @@ class Client(metaclass=ABCMeta):
             "2. Execute the client function",
             "3. Disconnect from the VPN",
         ]
-
+        clear_screen()
+        print("\n".join(options))
         option = input("Select an option: ")
 
         while option not in [str(i) for i in range(1, len(options) + 1)]:
