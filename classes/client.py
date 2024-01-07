@@ -38,31 +38,31 @@ class Client(metaclass=ABCMeta):
     def _connect_to_server(self):
         """Connect to the server."""
 
-        self._socket.connect((self._config["server_ip"], self._config["server_port"]))
+        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
     def __perform_first_connection(self):
         """Get the VPN protocol."""
 
         # Instance a new MyTCP socket for the first connection
-        self._socket = MySocket(VPNProtocol.TCP)
+        self.__socket = MySocket(VPNProtocol.TCP)
 
         # Create the request message
         request_message = self.__create_request_message()
 
         # Connect the socket to the server
-        self._socket.connect((self._config["server_ip"], self._config["server_port"]))
+        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
         # Send the request message
-        self._socket.send(request_message)
+        self.__socket.send(request_message)
 
         # Receive the response message
-        response_message = self._socket.recv(1024).decode()
+        response_message = self.__socket.recv(1024).decode()
 
         # Process the response
         self.__set_configuration(response_message)
 
         # Close
-        self._socket.close()
+        self.__socket.close()
 
     def __create_request_message(self):
         """Create the request message."""
@@ -105,7 +105,34 @@ class Client(metaclass=ABCMeta):
 
     def disconnect(self):
         """Disconnect from the server."""
-        self._socket.close()
+        self.__socket.close()
+
+    def _send_data(self, ip_server: str, port_server: int, data: str):
+        """Send data to the server."""
+        msg = (
+            REQUEST_PACKAGE_HEADER
+            + REQUEST_SEPARATOR
+            + ip_server
+            + REQUEST_SEPARATOR
+            + str(port_server)
+            + REQUEST_SEPARATOR
+            + data
+        )
+
+        self.__socket.send(msg.encode())
+
+    def _receive_data(self):
+        """Receive data from the server."""
+        return self.decode_data(self.__socket.recv(1024).decode())
+
+    def decode_data(self, data: str):
+        """Decode the data received from the server."""
+        splitted_data = data.split(REQUEST_SEPARATOR)
+
+        if len(splitted_data) != 2:
+            raise Exception("Error: The received data is not correct")
+
+        return splitted_data[1]
 
     @abstractmethod
     def execute_function(self, ip, port):
