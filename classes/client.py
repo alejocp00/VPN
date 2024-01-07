@@ -75,7 +75,7 @@ class Client(metaclass=ABCMeta):
         message += self._user_name + REQUEST_SEPARATOR
 
         # Add the password
-        message += self.__password
+        message += str(self.__password.encode())
 
         return message.encode()
 
