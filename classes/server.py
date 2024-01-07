@@ -74,9 +74,9 @@ class Server(metaclass=ABCMeta):
 
         # Execute the server function
         result = self._server_function(data, client_socket, client_address)
-
+        msg = self._result_msg(result)
         # Send the data to the client
-        client_socket.send(result.encode())
+        client_socket.send(msg.encode())
 
         # Close the connection
         client_socket.close()
@@ -111,12 +111,16 @@ class Server(metaclass=ABCMeta):
         print("AQUI")
         # Receive the data in small chunks and retransmit it
         result = self._server_function(data, self.__socket_udp, client_address)
-
+        msg = self._result_msg(result)
         # Send the data to the client
-        self.__socket_udp.send(result.encode(), client_address)
+        self.__socket_udp.send(msg.encode(), client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
+
+    def _result_msg(self, result):
+        """Create a result message."""
+        return REQUEST_RESPONSE_HEADER + REQUEST_SEPARATOR + result
 
     def _create_sockets(self):
         """Create the server socket."""
