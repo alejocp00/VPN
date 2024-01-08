@@ -11,6 +11,7 @@ from classes.database.ipDb import *
 from classes.database.iprange import *
 from classes.database.vlansIprangeDb import *
 from classes.database.usersIprangeDb import *
+from classes.users_manager import UsersManager
 from classes.vlan import Vlan
 from classes.user import User
 
@@ -26,6 +27,7 @@ class MyVPN:
         self.__socket_manager = SocketManager()
         self.__log_manager = LogManager()
         self.__vpn_status = VPNStatus.IDLE
+        self.__users_manager = UsersManager()
 
     def __create_socket(self):
         "This method create the vpn server socket"
@@ -89,6 +91,11 @@ class MyVPN:
 
                 ip = get_assigned_ip_by_name(data[1])
 
+                # Add the user to the users manager
+                self.__users_manager.add_user(data[1])
+                self.__users_manager.add_address_to_user(data[1], ip)
+                self.__users_manager.add_address_to_user(data[1], client_address)
+
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
 
@@ -110,6 +117,15 @@ class MyVPN:
             # Get the ip and port of the server
             ip_server = data[1]
             port_server = int(data[2])
+
+            # Todo: Specify who broke the access, the usr or the vlan
+            if self.__is_restricted(data[1], client_address):
+                # Enviar mensaje de error por restricción
+                msg = "You are not allowed to access this server"
+                data = (REQUEST_ERROR_HEADER, msg)
+                self.__process_data(data, protocol, client_address)
+                return
+
             # Get the data to send
             data_to_send = data[3]
             # Create a socket to connect to the server
@@ -125,24 +141,27 @@ class MyVPN:
             #     temp_socket.bind(adr)
             # Receive the response from the server
             response = temp_socket.recv(1024)
-            if(protocol==VPNProtocol.UDP):
-                response=response[0]
+            if protocol == VPNProtocol.UDP:
+                response = response[0]
             # Process the response
             decoded_response = self.__decode_data(response)
             self.__process_data(decoded_response, protocol, client_address)
 
-        elif data[0] == REQUEST_RESPONSE_HEADER:
-            msg=";".join(data).encode()
+        elif data[0] == REQUEST_RESPONSE_HEADER or data[0] == REQUEST_ERROR_HEADER:
+            msg = ";".join(data).encode()
 
             # Send the response to the client
-            if(protocol==VPNProtocol.UDP):
-                socket=MySocket(VPNProtocol.UDP)
-                socket.bind(("localhost",0))
+            if protocol == VPNProtocol.UDP:
+                socket = MySocket(VPNProtocol.UDP)
+                socket.bind(("localhost", 0))
                 socket.connect(client_address)
                 socket.send(msg)
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
-            
+
+    def __is_restricted(self, usr, address):
+        "This method verifies if a user is restricted to use an ip address"
+        return False
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
@@ -287,7 +306,6 @@ class MyVPN:
 
     def __decode_data(self, data):
         "This method decode the data received from the client"
-
 
         split_data = data.decode().split(REQUEST_SEPARATOR)
 
