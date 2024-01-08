@@ -117,11 +117,9 @@ class MyVPN:
             self.__process_data(decoded_response, protocol, client_address)
 
         elif data[0] == REQUEST_RESPONSE_HEADER:
-            # Get the response
-            response = data[1]
             # Send the response to the client
             self.__socket_manager.get_socket_by_name(client_address).send(
-                response.encode()
+                ";".join(data).encode()
             )
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
