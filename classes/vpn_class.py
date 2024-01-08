@@ -96,10 +96,11 @@ class MyVPN:
                 if protocol == VPNProtocol.UDP:
                     # Todo: change to the correct socket
                     response_socket = MySocket(VPNProtocol.UDP)
-                    response_socket.bind((self.ip, 0))
                     response_socket.connect(client_address)
                     self.__socket_manager.add_socket(response_socket, client_address)
                     response_socket.send(msg.encode())
+                    print(msg)
+                    print(client_address)
                 else:
                     self.__socket_manager.get_socket_by_name(client_address).send(
                         msg.encode()
@@ -263,14 +264,12 @@ class MyVPN:
     def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
 
-        # Add the fake socket to the socket manager
-        while self.__vpn_status == VPNStatus.RUNNING:
-            # Receive the data
-
-            decoded_data = self.__decode_data(data)
-
-            # Process the data
-            self.__process_data(decoded_data, VPNProtocol.UDP, client_address)
+        # Receive the data
+        decoded_data = self.__decode_data(data)
+        print(decoded_data)
+        print(client_address)
+        # Process the data
+        self.__process_data(decoded_data, VPNProtocol.UDP, client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
