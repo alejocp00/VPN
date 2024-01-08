@@ -554,3 +554,17 @@ class MyVPN:
         if password != select_user_password(username):
             return False
         return True
+
+
+    def user_can_connect_to_ip(self,username, ip_to_connect):
+        "Determines if a user can connect to a given IP"
+        user_id = select_id_for_username(username)
+        restricted_ips = select_iprange_by_user(user_id)
+
+        for ip_range_id in restricted_ips:
+            print(ip_range_id)
+            ip_range = select_ip_range_by_id(ip_range_id)
+            if self.__is_in_range(ip_to_connect, ip_range):
+                return False
+        
+        return True
