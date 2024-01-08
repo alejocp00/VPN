@@ -47,10 +47,16 @@ class Client(metaclass=ABCMeta):
 
         # Create the request message
         request_message = self.__create_request_message()
-
-        # Connect the socket to the server
-        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
-
+        try:
+            # Connect the socket to the server
+            self.__socket.connect(
+                (self._config["server_ip"], self._config["server_port"])
+            )
+        except:
+            self.__socket = MySocket(VPNProtocol.UDP)
+            self.__socket.connect(
+                (self._config["server_ip"], self._config["server_port"])
+            )
         # Send the request message
         self.__socket.send(request_message)
 

@@ -93,9 +93,18 @@ class MyVPN:
                 msg = self.__accepted_login_response(ip, protocol)
 
                 # Send the response
-                self.__socket_manager.get_socket_by_name(client_address).send(
-                    msg.encode()
-                )
+                if protocol == VPNProtocol.UDP:
+                    # Todo: change to the correct socket
+                    response_socket = MySocket(VPNProtocol.UDP)
+                    response_socket.bind((self.ip, 0))
+                    self.__socket_manager.add_socket(
+                        response_socket, str(client_address)
+                    )
+                    response_socket.send(msg.encode())
+                else:
+                    self.__socket_manager.get_socket_by_name(client_address).send(
+                        msg.encode()
+                    )
 
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
@@ -242,10 +251,7 @@ class MyVPN:
 
             # Add to log
             self.__log_manager.add_log("Data received from: " + str(client_address))
-            # Todo: change to the correct socket
-            response_socket = MySocket(VPNProtocol.UDP)
-            response_socket.bind((self.ip, 0))
-            self.__socket_manager.add_socket(response_socket, str(client_address))
+
             # Create a thread to handle the client
             client_thread = threading.Thread(
                 target=self.__udp_client_process, args=[recv_data, client_address]
@@ -259,7 +265,6 @@ class MyVPN:
         "This method is the main process of the client, it will be running until the client is disconnected"
 
         # Add the fake socket to the socket manager
-
         while self.__vpn_status == VPNStatus.RUNNING:
             # Receive the data
 

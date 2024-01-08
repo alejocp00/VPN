@@ -44,6 +44,8 @@ class MySocket:
             self._protocol.send(data)
 
     def recv(self, buffer_size):
+        if self.protocol == VPNProtocol.UDP:
+            return self._protocol.recvfrom(buffer_size)
         return self._protocol.recv(buffer_size)
 
     def sendall(self, data):
