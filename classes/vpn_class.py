@@ -97,9 +97,8 @@ class MyVPN:
                     # Todo: change to the correct socket
                     response_socket = MySocket(VPNProtocol.UDP)
                     response_socket.bind((self.ip, 0))
-                    self.__socket_manager.add_socket(
-                        response_socket, str(client_address)
-                    )
+                    response_socket.connect(client_address)
+                    self.__socket_manager.add_socket(response_socket, client_address)
                     response_socket.send(msg.encode())
                 else:
                     self.__socket_manager.get_socket_by_name(client_address).send(
