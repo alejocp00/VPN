@@ -118,7 +118,11 @@ class MyVPN:
             temp_socket.connect((ip_server, port_server))
             # Send the data to the server
             temp_socket.send(data_to_send.encode())
+            adr = temp_socket.getsockname()
             self.__socket_manager.add_socket(temp_socket, client_address)
+            if protocol == VPNProtocol.UDP:
+                temp_socket = MySocket(VPNProtocol.UDP)
+                temp_socket.bind(adr)
             # Receive the response from the server
             response = temp_socket.recv(1024)
             # Process the response
@@ -133,11 +137,9 @@ class MyVPN:
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
-        response = (
-            REQUEST_ACCEPTED_HEADER + REQUEST_SEPARATOR + ip + REQUEST_SEPARATOR + "tcp"
-            if protocol == VPNProtocol.TCP
-            else "udp"
-        )
+        response = REQUEST_ACCEPTED_HEADER + REQUEST_SEPARATOR + ip + REQUEST_SEPARATOR
+        response += "tcp" if protocol == VPNProtocol.TCP else "udp"
+
         return response
 
     def __show_log(self):

@@ -53,16 +53,22 @@ class Client(metaclass=ABCMeta):
                 (self._config["server_ip"], self._config["server_port"])
             )
         except:
+            self.__socket.close()
             self.__socket = MySocket(VPNProtocol.UDP)
             self.__socket.connect(
                 (self._config["server_ip"], self._config["server_port"])
             )
         # Send the request message
         self.__socket.send(request_message)
-
+        adr = self.__socket.getsockname()
+        self.__socket = MySocket(VPNProtocol.UDP)
+        self.__socket.bind(adr)
         # Receive the response message
-        response_message = self.__socket.recv(1024).decode()
-
+        response_message, address = self.__socket.recv(1024)
+        print("Recibiendo")
+        print(response_message)
+        response_message = response_message.decode()
+        print("Recibido")
         # Process the response
         self.__set_configuration(response_message)
 
