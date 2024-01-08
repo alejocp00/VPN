@@ -120,20 +120,29 @@ class MyVPN:
             temp_socket.send(data_to_send.encode())
             adr = temp_socket.getsockname()
             self.__socket_manager.add_socket(temp_socket, client_address)
-            if protocol == VPNProtocol.UDP:
-                temp_socket = MySocket(VPNProtocol.UDP)
-                temp_socket.bind(adr)
+            # if protocol == VPNProtocol.UDP:
+            #     temp_socket = MySocket(VPNProtocol.UDP)
+            #     temp_socket.bind(adr)
             # Receive the response from the server
             response = temp_socket.recv(1024)
+            if(protocol==VPNProtocol.UDP):
+                response=response[0]
             # Process the response
             decoded_response = self.__decode_data(response)
             self.__process_data(decoded_response, protocol, client_address)
 
         elif data[0] == REQUEST_RESPONSE_HEADER:
+            msg=";".join(data).encode()
+
             # Send the response to the client
-            self.__socket_manager.get_socket_by_name(client_address).send(
-                ";".join(data).encode()
-            )
+            if(protocol==VPNProtocol.UDP):
+                socket=MySocket(VPNProtocol.UDP)
+                socket.bind(("localhost",0))
+                socket.connect(client_address)
+                socket.send(msg)
+            else:
+                self.__socket_manager.get_socket_by_name(client_address).send(msg)
+            
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
@@ -278,6 +287,8 @@ class MyVPN:
 
     def __decode_data(self, data):
         "This method decode the data received from the client"
+
+
         split_data = data.decode().split(REQUEST_SEPARATOR)
 
         if not split_data:
