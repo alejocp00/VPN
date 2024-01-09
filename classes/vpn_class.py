@@ -226,6 +226,7 @@ class MyVPN:
         while self.__vpn_status == VPNStatus.RUNNING:
             # Receive the data
             data = client_socket.recv(1024)
+            self.__log_manager.add_log("Data received from: " + str(client_address))
 
             # If the client is disconnected
             if not data:
