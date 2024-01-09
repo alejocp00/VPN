@@ -34,9 +34,9 @@ class MySocket:
     def connect(self, address):
         self._protocol.connect(address)
 
-    def send(self, data,address='127.0.0.1'):###
+    def send(self, data, address="127.0.0.1"):  ###
         if self.protocol == VPNProtocol.UDP:
-            self._protocol.send(data,address)
+            self._protocol.send(data, address)
         else:
             self._protocol.send(data)
 
@@ -47,3 +47,7 @@ class MySocket:
 
     def getsockname(self):
         return self._protocol.getsockname()
+
+    def get_socket_log(self):
+        if self.protocol == VPNProtocol.UDP:
+            return self._protocol.log_manager.get_all_log()
