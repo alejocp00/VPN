@@ -28,8 +28,8 @@ class Server(metaclass=ABCMeta):
         self._create_sockets()
 
         # Bind the socket to the port
-        self.__socket_tcp.bind((self.__server_ip, 0))
-        self.__socket_udp.bind((self.__server_ip, 0))
+        self.__socket_tcp.bind(('127.0.0.3', 0))
+        self.__socket_udp.bind(('127.0.0.3', 0))
 
         # Get the port
         self.__tcp_port = self.__socket_tcp.getsockname()[1]
