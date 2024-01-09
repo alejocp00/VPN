@@ -562,7 +562,18 @@ class MyVPN:
         restricted_ips = select_iprange_by_user(user_id)
 
         for ip_range_id in restricted_ips:
-            print(ip_range_id)
+            ip_range = select_ip_range_by_id(ip_range_id)
+            if self.__is_in_range(ip_to_connect, ip_range):
+                return False
+        
+        return True
+    
+    def vlan_can_connect_to_ip(self, username, ip_to_connect):
+        "Determines whether a user can connect to a given ip depending on the vlan it belongs to"
+        vlan_id = select_vlan_for_username(username)
+        restricted_ips = select_iprange_by_vlan(vlan_id)
+
+        for ip_range_id in restricted_ips:
             ip_range = select_ip_range_by_id(ip_range_id)
             if self.__is_in_range(ip_to_connect, ip_range):
                 return False

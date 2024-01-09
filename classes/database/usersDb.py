@@ -82,3 +82,11 @@ def select_user_password(name):
     password = c.fetchone()[0]
     conn.close()
     return password
+
+def select_vlan_for_username(username):
+     conn = sqlite3.connect('vpn.db')
+     c = conn.cursor()
+     c.execute("SELECT vlanId FROM users WHERE name=?",(username,))
+     vlan_id = c.fetchone()[0]
+     conn.close()
+     return vlan_id
