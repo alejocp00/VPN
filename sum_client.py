@@ -6,7 +6,7 @@ class SumClient(Client):
     def __init__(self):
         super().__init__()
 
-    def execute_function(self):
+    def execute_function(self, ip, port):
         """Execute the function."""
         # Get the numbers
         num1 = self.__get_number()
@@ -17,11 +17,11 @@ class SumClient(Client):
         print("Sending the numbers to the server...")
 
         # Send the numbers to the server
-        self._socket.send(data.encode())
+        self._send_data(ip, port, data)
 
         print("Waiting for the result...")
         # Receive the result
-        result = self._socket.recv(1024).decode()
+        result = self._receive_data()
 
         # Print the result
         print(f"The result is: {result}")
@@ -37,3 +37,6 @@ class SumClient(Client):
                 print("Please enter a valid number")
 
         return number
+
+
+SumClient().menu()

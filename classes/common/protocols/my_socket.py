@@ -11,36 +11,43 @@ class MySocket:
             self._protocol = MyTCP()
         elif protocol == VPNProtocol.UDP:
             self._protocol = MyUDP()
+            # self._protocol = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         else:
             raise NotImplementedError("Protocol not implemented")
 
-        # fix: need to be raw
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.protocol = protocol
 
-        # Todo: Implement
         pass
 
     def close(self):
-        # Todo:implement close socket function
-        self._socket.close()
+        self._protocol.close()
 
     def bind(self, address):
-        self._socket.bind(address)
+        self._protocol.bind(address)
 
     def listen(self):
-        self._socket.listen()
+        self._protocol.listen()
 
     def accept(self):
-        return self._socket.accept()
+        return self._protocol.accept()
 
     def connect(self, address):
-        self._socket.connect(address)
+        self._protocol.connect(address)
 
-    def send(self, data):
-        self._socket.send(data)
+    def send(self, data, address="127.0.0.1"):  ###
+        if self.protocol == VPNProtocol.UDP:
+            self._protocol.send(data, address)
+        else:
+            self._protocol.send(data)
 
     def recv(self, buffer_size):
-        return self._socket.recv(buffer_size)
+        if self.protocol == VPNProtocol.UDP:
+            return self._protocol.recv(buffer_size)
+        return self._protocol.recv(buffer_size)
 
-    def sendall(self, data):
-        self._socket.sendall(data)
+    def getsockname(self):
+        return self._protocol.getsockname()
+
+    def get_socket_log(self):
+        if self.protocol == VPNProtocol.UDP:
+            return self._protocol.log_manager.get_all_log()

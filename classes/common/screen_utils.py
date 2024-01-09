@@ -109,7 +109,7 @@ def validate_ip_address(ip):
 
 def validate_mask(mask):
     "This function verifies if the input is a valid mask"
-    # ToDo: implementar validacion de la mascara que pasa el usuario
+    
     pass
 
 

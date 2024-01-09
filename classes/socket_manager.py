@@ -13,3 +13,8 @@ class SocketManager:
     def remove_socket(self, socket):
         if socket in self.__sockets:
             del self.__sockets[socket]
+
+    def get_socket_by_name(self, name: str):
+        for socket in self.__sockets:
+            if self.__sockets[socket] == name:
+                return socket
