@@ -28,7 +28,7 @@ class MyUDP:
         self.IP_PACKET_OFF = self.VERSION_OFF
         self.UDP_PACKET_OFF = self.SRC_PORT_OFF
 
-        self.socket = None
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
         self.src_addr = None
 
     def parse(self, data):
@@ -75,17 +75,21 @@ class MyUDP:
 
         return packet
 
-    def create_socket(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
-        return self.socket
-
     def bind(self, src_addr):
         self.socket.bind(src_addr)
-        self.src_addr = src_addr
+        self.src_addr = self.socket.getsockname()
+
+    def getsockname(self):
+        return self.socket.getsockname()
 
     def udp_send(self, data, dest_addr):
         # Generate pseudo header
         src_ip, dest_ip = self.ip2int(self.src_addr[0]), self.ip2int(dest_addr[0])
+        print("scr_ip")
+        print(src_ip)
+    
+        print("dest_ip")
+        print(dest_ip)
         src_ip = struct.pack("!4B", *src_ip)
         dest_ip = struct.pack("!4B", *dest_ip)
 
@@ -203,9 +207,17 @@ class MyUDP:
         file.close()
         self.udp_send(data.encode(), dest_addr)
 
-    def send_message(self, message, dest_addr):
+    def send(self, message, dest_addr):
+        print(dest_addr)
+        print(message)
+        try:
+            message=message.decode()
+        except:
+            pass
+        
         message = "*msg*" + message
-        self.udp_send(message.encode(), dest_addr)
+        print(message)
+        self.udp_send(message.encode(), dest_addr)#message.encode()
 
     def recv(self, buffer_size):
         data, addr = self.udp_recv(buffer_size)

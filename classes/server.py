@@ -76,7 +76,7 @@ class Server(metaclass=ABCMeta):
         result = self._server_function(data, client_socket, client_address)
         msg = self._result_msg(result)
         # Send the data to the client
-        client_socket.send(msg.encode())
+        client_socket.send(msg.encode(),client_address)
 
         # Close the connection
         client_socket.close()
@@ -91,12 +91,12 @@ class Server(metaclass=ABCMeta):
         """Receive data from clients."""
 
         while self.__server_status == VPNStatus.RUNNING:
-            recv_data, client_address = self.__socket_udp.recvfrom(1024)
+            recv_data, client_address = self.__socket_udp.recv(1024)
             if recv_data:
                 # Create a thread to handle the client
                 client_thread = threading.Thread(
                     target=self.__udp_client_process,
-                    args=[recv_data.decode(), client_address],
+                    args=[recv_data, client_address],
                 )
                 client_thread.start()
 
@@ -111,7 +111,7 @@ class Server(metaclass=ABCMeta):
         result = self._server_function(data, self.__socket_udp, client_address)
         msg = self._result_msg(result)
         # Send the data to the client
-        self.__socket_udp.sendto(msg.encode(), client_address)
+        self.__socket_udp.send(msg, client_address)
 
         # Remove the thread from the thread manager
         self.__thread_manager.remove_thread(threading.current_thread())
@@ -123,8 +123,8 @@ class Server(metaclass=ABCMeta):
     def _create_sockets(self):
         """Create the server socket."""
         self.__socket_tcp = MySocket(VPNProtocol.TCP)
-        # self.__socket_udp = MySocket(VPNProtocol.UDP)
-        self.__socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.__socket_udp = MySocket(VPNProtocol.UDP)
+        #self.__socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def _stop_server(self):
         """Stop the server."""

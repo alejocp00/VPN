@@ -48,29 +48,6 @@ class MyVPN:
         server_thread.start()
         self.__thread_manager.add_thread(server_thread, "server")
 
-    # def __create_fake_socket(self, client_address, ip_server, port_server):
-    #     "This method create a fake socket for the client"
-
-    #     # Create a fake socket
-    #     fake_socket = MySocket(self.protocol)
-
-    #     # Get the fake ip and port
-
-    #     fake_ip = self.__extract_fake_ip(client_address)
-
-    #     # Bind the fake socket to the fake ip and port
-
-    #     fake_socket.bind((fake_ip, 0))  # 0 means auto assign port
-
-    #     # Connect the fake socket to the server
-
-    #     if self.protocol == VPNProtocol.TCP:
-    #         fake_socket.connect((ip_server, port_server))
-
-    #     # Return the fake socket
-
-    #     return fake_socket
-
     def __extract_fake_ip(self, client_username):
         "This method extract the client fake ip"
         return get_assigned_ip_by_name(client_username)
@@ -96,9 +73,11 @@ class MyVPN:
                 if protocol == VPNProtocol.UDP:
                     # Todo: change to the correct socket
                     response_socket = MySocket(VPNProtocol.UDP)
-                    response_socket.connect(client_address)
+                    response_socket.bind(('localhost',0))##
+                    #response_socket.connect(client_address)
                     self.__socket_manager.add_socket(response_socket, client_address)
-                    response_socket.send(msg.encode())
+                    response_socket.send(msg.encode(),client_address)
+                    print("En el login header")
                     print(msg)
                     print(client_address)
                 else:
@@ -115,10 +94,15 @@ class MyVPN:
             # Create a socket to connect to the server
             temp_socket = MySocket(protocol)
             # Connect the socket to the server
-            temp_socket.connect((ip_server, port_server))
+            if protocol == VPNProtocol.TCP:
+                temp_socket.connect((ip_server, port_server))
             # Send the data to the server
-            temp_socket.send(data_to_send.encode())
-            adr = temp_socket.getsockname()
+            if protocol == VPNProtocol.UDP:
+                temp_socket.bind(('localhost',0))###
+                temp_socket.send(data_to_send.encode(),(ip_server, port_server))
+            else:
+                temp_socket.send(data_to_send.encode())
+            adr = temp_socket.getsockname() ####?
             self.__socket_manager.add_socket(temp_socket, client_address)
             # if protocol == VPNProtocol.UDP:
             #     temp_socket = MySocket(VPNProtocol.UDP)
@@ -136,10 +120,11 @@ class MyVPN:
 
             # Send the response to the client
             if(protocol==VPNProtocol.UDP):
+                print("enviando")
+                print(client_address)
                 socket=MySocket(VPNProtocol.UDP)
                 socket.bind(("localhost",0))
-                socket.connect(client_address)
-                socket.send(msg)
+                socket.send(msg,('127.0.0.2',0))#####
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
             
@@ -274,9 +259,11 @@ class MyVPN:
 
     def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
-
+        data=data.encode()
+        print(data)
         # Receive the data
         decoded_data = self.__decode_data(data)
+        print("en el udp process")
         print(decoded_data)
         print(client_address)
         # Process the data
@@ -288,8 +275,18 @@ class MyVPN:
     def __decode_data(self, data):
         "This method decode the data received from the client"
 
+        print("separator")
 
-        split_data = data.decode().split(REQUEST_SEPARATOR)
+        print(data)
+
+        try:
+            data=data.decode()
+        except:
+            pass
+
+        print(data)
+            
+        split_data = data.split(REQUEST_SEPARATOR)
 
         if not split_data:
             return None
@@ -298,8 +295,8 @@ class MyVPN:
         if split_data[0] == REQUEST_LOGIN_HEADER:
             usr = split_data[1]
             pwd = split_data[2]
-            print(usr)
-            print(pwd)
+            # print(usr)
+            # print(pwd)
             return (REQUEST_LOGIN_HEADER, usr, pwd)
 
         # Get normal request

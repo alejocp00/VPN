@@ -37,7 +37,10 @@ class Client(metaclass=ABCMeta):
     def _connect_to_server(self):
         """Connect to the server."""
         self.__socket = MySocket(self._config["protocol"])
-        self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
+        if self._config["protocol"] == VPNProtocol.UDP:
+            self.__socket.bind(('127.0.0.2',0))
+        else:
+            self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
     def __perform_first_connection(self):
         """Get the VPN protocol."""
@@ -55,20 +58,22 @@ class Client(metaclass=ABCMeta):
         except:
             self.__socket.close()
             self.__socket = MySocket(VPNProtocol.UDP)
-            self.__socket.connect(
-                (self._config["server_ip"], self._config["server_port"])
-            )
+            self.__socket.bind(('127.0.0.2',0))#
+            # self.__socket.connect(
+            #     (self._config["server_ip"], self._config["server_port"])
+            # )
             using_udp = True
         # Send the request message
-        self.__socket.send(request_message)
+        self.__socket.send(request_message,(self._config["server_ip"], self._config["server_port"]))
         if using_udp:
-            adr = self.__socket.getsockname()
+            adr = ('127.0.0.2',0)#self.__socket.getsockname()
             self.__socket = MySocket(VPNProtocol.UDP)
             self.__socket.bind(adr)
         # Receive the response message
         response_message = self.__socket.recv(1024)
         if using_udp:
             response_message = response_message[0]
+            response_message=response_message.encode()
         print(response_message)
         response_message = response_message.decode()
         print("Recibido")
@@ -133,7 +138,7 @@ class Client(metaclass=ABCMeta):
             + data
         )
 
-        self.__socket.send(msg.encode())
+        self.__socket.send(msg.encode(),(self._config["server_ip"], self._config["server_port"]))
 
     def _receive_data(self):
         """Receive data from the server."""
@@ -143,7 +148,10 @@ class Client(metaclass=ABCMeta):
         adr = self.__socket.getsockname()
         self.__socket = MySocket(VPNProtocol.UDP)
         self.__socket.bind(adr)
-        return self.decode_data(self.__socket.recv(1024)[0].decode())
+        print("respuesta")
+        resp=self.__socket.recv(1024)[0]#.decode()  if udp
+        print(resp)
+        return self.decode_data(resp)
 
     def decode_data(self, data: str):
         """Decode the data received from the server."""

@@ -10,9 +10,8 @@ class MySocket:
         if protocol == VPNProtocol.TCP:
             self._protocol = MyTCP()
         elif protocol == VPNProtocol.UDP:
-            # self._protocol = MyUDP()
-            # self._protocol.create_socket()
-            self._protocol = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self._protocol = MyUDP()
+            # self._protocol = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         else:
             raise NotImplementedError("Protocol not implemented")
 
@@ -37,19 +36,16 @@ class MySocket:
     def connect(self, address):
         self._protocol.connect(address)
 
-    def send(self, data):
+    def send(self, data,address='127.0.0.1'):
         if self.protocol == VPNProtocol.UDP:
-            self._protocol.send(data)
+            self._protocol.send(data,address)
         else:
             self._protocol.send(data)
 
     def recv(self, buffer_size):
         if self.protocol == VPNProtocol.UDP:
-            return self._protocol.recvfrom(buffer_size)
+            return self._protocol.recv(buffer_size)
         return self._protocol.recv(buffer_size)
-
-    def sendall(self, data):
-        self._protocol.sendall(data)
 
     def getsockname(self):
         return self._protocol.getsockname()
