@@ -18,7 +18,6 @@ from classes.user import User
 
 class MyVPN:
     def __init__(self):
-    
         self.protocol = VPNProtocol.UNKNOWN
         self.port = VPN_SERVER_PORT
         self.ip = VPN_SERVER_IP
@@ -73,29 +72,44 @@ class MyVPN:
                 self.__users_manager.add_address_to_user(data[1], ip)
                 self.__users_manager.add_address_to_user(data[1], client_address)
 
-
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
 
+                # Add to log
+                self.__log_manager.add_log(f"User {data[1]} logged in.")
+
                 # Send the response
                 if protocol == VPNProtocol.UDP:
-                    
                     response_socket = MySocket(VPNProtocol.UDP)
-                    response_socket.bind(('localhost',0))
+                    response_socket.bind(("localhost", 0))
                     self.__socket_manager.add_socket(response_socket, client_address)
-                    response_socket.send(msg.encode(),client_address)
-                    
+                    response_socket.send(msg.encode(), client_address)
+
+                    # Update log
+                    self.__log_manager.add_log(response_socket.get_socket_log())
+
                 else:
                     self.__socket_manager.get_socket_by_name(client_address).send(
                         msg.encode()
                     )
+            else:
+                # Create error message
+                msg = "Invalid user or password"
+
+                # Add to log
+                self.__log_manager.add_log(f"User {data[1]} failed to log in.")
+
+                # Send the response
+                self.__process_data(
+                    (REQUEST_ERROR_HEADER, msg), protocol, client_address
+                )
 
         elif data[0] == REQUEST_PACKAGE_HEADER:
             # Get the ip and port of the server
             ip_server = data[1]
             port_server = int(data[2])
 
-            username=self.__users_manager.get_user_by_address(client_address)
+            username = self.__users_manager.get_user_by_address(client_address)
 
             # Todo: Specify who broke the access, the usr or the vlan
             # if not self.__user_can_connect_to_ip(
@@ -117,13 +131,13 @@ class MyVPN:
                 temp_socket.connect((ip_server, port_server))
             # Send the data to the server
             if protocol == VPNProtocol.UDP:
-                temp_socket.bind(('localhost',0))###
-                temp_socket.send(data_to_send.encode(),(ip_server, port_server))
+                temp_socket.bind(("localhost", 0))  ###
+                temp_socket.send(data_to_send.encode(), (ip_server, port_server))
             else:
                 temp_socket.send(data_to_send.encode())
-            adr = temp_socket.getsockname() ####?
+            adr = temp_socket.getsockname()  ####?
             self.__socket_manager.add_socket(temp_socket, client_address)
-            
+
             response = temp_socket.recv(1024)
             if protocol == VPNProtocol.UDP:
                 response = response[0]
@@ -135,10 +149,10 @@ class MyVPN:
             msg = ";".join(data).encode()
 
             # Send the response to the client
-            if(protocol==VPNProtocol.UDP):
-                socket=MySocket(VPNProtocol.UDP)
-                socket.bind(("localhost",0))
-                socket.send(msg,('127.0.0.2',0))
+            if protocol == VPNProtocol.UDP:
+                socket = MySocket(VPNProtocol.UDP)
+                socket.bind(("localhost", 0))
+                socket.send(msg, ("127.0.0.2", 0))
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
 
@@ -259,6 +273,10 @@ class MyVPN:
         while self.__vpn_status == VPNStatus.RUNNING:
             recv_data, client_address = self.__socket.recv(1024)
 
+            # Update log
+            self.__log_manager.add_log(self.__socket.get_socket_log())
+            self.__log_manager.add_log("New connection from: " + str(client_address))
+
             # Add to log
             self.__log_manager.add_log("Data received from: " + str(client_address))
 
@@ -273,10 +291,13 @@ class MyVPN:
 
     def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
-        data=data.encode()
+        data = data.encode()
         # Receive the data
         decoded_data = self.__decode_data(data)
-    
+
+        # Update log
+        self.__log_manager.add_log("Decoded data of client: " + str(client_address))
+
         # Process the data
         self.__process_data(decoded_data, VPNProtocol.UDP, client_address)
 
@@ -286,12 +307,11 @@ class MyVPN:
     def __decode_data(self, data):
         "This method decode the data received from the client"
 
-
         try:
-            data=data.decode()
+            data = data.decode()
         except:
             pass
-            
+
         split_data = data.split(REQUEST_SEPARATOR)
 
         if not split_data:
@@ -301,7 +321,7 @@ class MyVPN:
         if split_data[0] == REQUEST_LOGIN_HEADER:
             usr = split_data[1]
             pwd = split_data[2]
-            
+
             return (REQUEST_LOGIN_HEADER, usr, pwd)
 
         # Get normal request
@@ -322,7 +342,6 @@ class MyVPN:
 
     def menu(self):
         """Show the menu."""
-        
 
         clear_screen()
 
