@@ -2,6 +2,8 @@ import socket
 import struct
 import os
 
+from classes.log_manager import LogManager
+
 
 class MyUDP:
     def __init__(self):
@@ -30,6 +32,8 @@ class MyUDP:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
         self.src_addr = None
+
+        self.log_manager = LogManager()
 
     def parse(self, data):
         packet = {}
@@ -85,7 +89,8 @@ class MyUDP:
     def udp_send(self, data, dest_addr):
         # Generate pseudo header
         src_ip, dest_ip = self.ip2int(self.src_addr[0]), self.ip2int(dest_addr[0])
-        #LOG Send Packet to {dest_ip}
+        # LOG Send Packet to {dest_ip}
+        self.log_manager.add_log(f"Send Packet to {dest_ip}")
         src_ip = struct.pack("!4B", *src_ip)
         dest_ip = struct.pack("!4B", *dest_ip)
 
@@ -113,10 +118,8 @@ class MyUDP:
         checksum = self.checksum_func(pseudo_header + udp_header + data)
         udp_header = struct.pack("!4H", src_port, dest_port, udp_length, checksum)
 
-        
-
-        #LOG:Checksum value is {checksum}
-
+        # LOG:Checksum value is {checksum}
+        self.log_manager.add_log(f"Checksum value is {checksum}")
         self.socket.sendto(udp_header + data, dest_addr)
 
     def checksum_func(self, data):
@@ -147,8 +150,8 @@ class MyUDP:
         while True:
             data, src_addr = self.socket.recvfrom(size)
 
-            #LOG:Receiving Data from: {src_addr}
-
+            # LOG:Receiving Data from: {src_addr}
+            self.log_manager.add_log(f"Receiving Data from: {src_addr}")
             packet = self.parse(data)
             ip_addr = struct.pack(
                 "!8B", *[data[x] for x in range(self.SRC_IP_OFF, self.SRC_IP_OFF + 8)]
@@ -171,11 +174,12 @@ class MyUDP:
             if src_addr == ("127.0.0.53", 0):
                 continue
             if verify == 0xFFFF:
-                #LOG:Checksum verified,recibed Packet
+                # LOG:Checksum verified,received Packet
+                self.log_manager.add_log("Checksum verified,received Packet")
                 return packet["data"], src_addr
             else:
-                #LOG:Checksum Error!Packet is discarded
-                print("Checksum Error!Packet is discarded")
+                # LOG:Checksum Error!Packet is discarded
+                self.log_manager.add_log("Checksum Error!Packet is discarded")
                 return "", ""
 
     def verify_checksum(self, data, checksum):
@@ -194,13 +198,11 @@ class MyUDP:
     def close(self):
         self.socket.close()
 
-    
-
     def send_file(self, file, dest_addr):
         current_dir = os.getcwd()
         three_levels_up_dir = os.path.abspath(
             os.path.join(current_dir, "..", "..", "..")
-        ) 
+        )
 
         file_path = os.path.join(three_levels_up_dir, "SEND", file)
         file_name = file
@@ -213,12 +215,12 @@ class MyUDP:
 
     def send(self, message, dest_addr):
         try:
-            message=message.decode()
+            message = message.decode()
         except:
             pass
-        
+
         message = "*msg*" + message
-        
+
         self.udp_send(message.encode(), dest_addr)
 
     def recv(self, buffer_size):
@@ -235,14 +237,13 @@ class MyUDP:
                 file_name += data[i]
                 i += 1
 
-
             data = data[i + 1 :]
 
             current_dir = os.getcwd()
 
             three_levels_up_dir = os.path.abspath(
                 os.path.join(current_dir, "..", "..", "..")
-            )  
+            )
 
             receive_dir = os.path.join(three_levels_up_dir, "RECEIVE")
             if not os.path.exists(receive_dir):
