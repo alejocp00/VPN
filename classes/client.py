@@ -103,7 +103,7 @@ class Client(metaclass=ABCMeta):
         """Set the configuration."""
 
         if not received_data or received_data == "":
-            # Todo: Handle this exception. It can't break the program
+            
             raise Exception("Error: The received data is empty")
 
         # Split the received data
@@ -120,7 +120,7 @@ class Client(metaclass=ABCMeta):
 
         # Process incorrect response
         if received_data[0] == REQUEST_ERROR_HEADER:
-            # Todo: Handle this exception. It can't break the program
+            
             raise Exception(f"Error: {received_data[1]}")
 
     def disconnect(self):
@@ -187,7 +187,7 @@ class Client(metaclass=ABCMeta):
         if option == "1":
             self.connect()
         elif option == "2":
-            # Todo: Check if the client is connected
+            
             self.execute_function(get_ip_address(), input("port: "))
         elif option == "3":
             self.disconnect()

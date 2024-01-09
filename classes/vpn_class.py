@@ -18,7 +18,7 @@ from classes.user import User
 
 class MyVPN:
     def __init__(self):
-        # Todo: Add the code to initialize the class
+    
         self.protocol = VPNProtocol.UNKNOWN
         self.port = VPN_SERVER_PORT
         self.ip = VPN_SERVER_IP
@@ -321,7 +321,7 @@ class MyVPN:
 
     def menu(self):
         """Show the menu."""
-        # Todo: VPN menu as while true
+        
 
         clear_screen()
 
@@ -481,8 +481,6 @@ class MyVPN:
 
     def __restrict_vlan_menu(self):
         """Restrict VLAN."""
-
-        # Todo: get a list with all the vlans and show it to the user enumerated
 
         # Get vlan info
         vlan_temporal = get_id()

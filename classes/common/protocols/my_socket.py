@@ -17,11 +17,9 @@ class MySocket:
 
         self.protocol = protocol
 
-        # Todo: Implement
         pass
 
     def close(self):
-        # Todo:implement close socket function
         self._protocol.close()
 
     def bind(self, address):
