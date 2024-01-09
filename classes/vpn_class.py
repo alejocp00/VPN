@@ -119,7 +119,10 @@ class MyVPN:
             port_server = int(data[2])
 
             # Todo: Specify who broke the access, the usr or the vlan
-            if self.__is_restricted(data[1], client_address):
+            if not self.__user_can_connect_to_ip(
+                data[1], ip_server
+            ) or not self.__vlan_can_connect_to_ip(data[1], ip_server):
+                # Todo: Put it on log
                 # Enviar mensaje de error por restricción
                 msg = "You are not allowed to access this server"
                 data = (REQUEST_ERROR_HEADER, msg)
@@ -158,10 +161,6 @@ class MyVPN:
                 socket.send(msg)
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
-
-    def __is_restricted(self, usr, address):
-        "This method verifies if a user is restricted to use an ip address"
-        return False
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
@@ -555,8 +554,7 @@ class MyVPN:
             return False
         return True
 
-
-    def user_can_connect_to_ip(self,username, ip_to_connect):
+    def __user_can_connect_to_ip(self, username, ip_to_connect):
         "Determines if a user can connect to a given IP"
         user_id = select_id_for_username(username)
         restricted_ips = select_iprange_by_user(user_id)
@@ -565,10 +563,10 @@ class MyVPN:
             ip_range = select_ip_range_by_id(ip_range_id)
             if self.__is_in_range(ip_to_connect, ip_range):
                 return False
-        
+
         return True
-    
-    def vlan_can_connect_to_ip(self, username, ip_to_connect):
+
+    def __vlan_can_connect_to_ip(self, username, ip_to_connect):
         "Determines whether a user can connect to a given ip depending on the vlan it belongs to"
         vlan_id = select_vlan_for_username(username)
         restricted_ips = select_iprange_by_vlan(vlan_id)
@@ -577,5 +575,5 @@ class MyVPN:
             ip_range = select_ip_range_by_id(ip_range_id)
             if self.__is_in_range(ip_to_connect, ip_range):
                 return False
-        
+
         return True
