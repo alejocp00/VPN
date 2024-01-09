@@ -8,7 +8,7 @@ def insert_ip(ip, vlanId):
     conn.commit()
     conn.close()
 
-def select_ip(id):
+def select_ip_by_id(id):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
     c.execute("SELECT * FROM ips WHERE id=?", (id,))
@@ -25,7 +25,7 @@ def get_ip_id(ip):
     return ip
 
 
-def select_ip(vlanId):
+def select_ip_by_vlanid(vlanId):
     conn = sqlite3.connect('vpn.db')
     c = conn.cursor()
     c.execute("SELECT ip FROM ips WHERE vlanId=?", (vlanId,))

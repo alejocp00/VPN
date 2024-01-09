@@ -11,6 +11,7 @@ from classes.database.ipDb import *
 from classes.database.iprange import *
 from classes.database.vlansIprangeDb import *
 from classes.database.usersIprangeDb import *
+from classes.users_manager import UsersManager
 from classes.vlan import Vlan
 from classes.user import User
 
@@ -26,6 +27,7 @@ class MyVPN:
         self.__socket_manager = SocketManager()
         self.__log_manager = LogManager()
         self.__vpn_status = VPNStatus.IDLE
+        self.__users_manager = UsersManager()
 
     def __create_socket(self):
         "This method create the vpn server socket"
@@ -66,6 +68,11 @@ class MyVPN:
 
                 ip = get_assigned_ip_by_name(data[1])
 
+                # Add the user to the users manager
+                self.__users_manager.add_user(data[1])
+                self.__users_manager.add_address_to_user(data[1], ip)
+                self.__users_manager.add_address_to_user(data[1], client_address)
+
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
 
@@ -89,6 +96,18 @@ class MyVPN:
             # Get the ip and port of the server
             ip_server = data[1]
             port_server = int(data[2])
+
+            # Todo: Specify who broke the access, the usr or the vlan
+            if not self.__user_can_connect_to_ip(
+                data[1], ip_server
+            ) or not self.__vlan_can_connect_to_ip(data[1], ip_server):
+                # Todo: Put it on log
+                # Enviar mensaje de error por restricción
+                msg = "You are not allowed to access this server"
+                data = (REQUEST_ERROR_HEADER, msg)
+                self.__process_data(data, protocol, client_address)
+                return
+
             # Get the data to send
             data_to_send = data[3]
             # Create a socket to connect to the server
@@ -109,14 +128,14 @@ class MyVPN:
             #     temp_socket.bind(adr)
             # Receive the response from the server
             response = temp_socket.recv(1024)
-            if(protocol==VPNProtocol.UDP):
-                response=response[0]
+            if protocol == VPNProtocol.UDP:
+                response = response[0]
             # Process the response
             decoded_response = self.__decode_data(response)
             self.__process_data(decoded_response, protocol, client_address)
 
-        elif data[0] == REQUEST_RESPONSE_HEADER:
-            msg=";".join(data).encode()
+        elif data[0] == REQUEST_RESPONSE_HEADER or data[0] == REQUEST_ERROR_HEADER:
+            msg = ";".join(data).encode()
 
             # Send the response to the client
             if(protocol==VPNProtocol.UDP):
@@ -127,7 +146,6 @@ class MyVPN:
                 socket.send(msg,('127.0.0.2',0))#####
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
-            
 
     def __accepted_login_response(self, ip: str, protocol: VPNProtocol):
         "This method create the response message for a login request"
@@ -532,4 +550,28 @@ class MyVPN:
             return False
         if password != select_user_password(username):
             return False
+        return True
+
+    def __user_can_connect_to_ip(self, username, ip_to_connect):
+        "Determines if a user can connect to a given IP"
+        user_id = select_id_for_username(username)
+        restricted_ips = select_iprange_by_user(user_id)
+
+        for ip_range_id in restricted_ips:
+            ip_range = select_ip_range_by_id(ip_range_id)
+            if self.__is_in_range(ip_to_connect, ip_range):
+                return False
+
+        return True
+
+    def __vlan_can_connect_to_ip(self, username, ip_to_connect):
+        "Determines whether a user can connect to a given ip depending on the vlan it belongs to"
+        vlan_id = select_vlan_for_username(username)
+        restricted_ips = select_iprange_by_vlan(vlan_id)
+
+        for ip_range_id in restricted_ips:
+            ip_range = select_ip_range_by_id(ip_range_id)
+            if self.__is_in_range(ip_to_connect, ip_range):
+                return False
+
         return True

@@ -25,3 +25,11 @@ def select_id_for_ip_range(iprange):
     iprange = c.fetchone()[0]
     conn.close()
     return iprange
+
+def select_ip_range_by_id(id_ip_range):
+     conn = sqlite3.connect("vpn.db")
+     c = conn.cursor()
+     c.execute("SELECT rangeIp FROM iprange WHERE id=?", (id_ip_range))
+     iprange = c.fetchone()[0]
+     conn.close()
+     return iprange
