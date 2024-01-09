@@ -73,20 +73,18 @@ class MyVPN:
                 self.__users_manager.add_address_to_user(data[1], ip)
                 self.__users_manager.add_address_to_user(data[1], client_address)
 
+
                 # Create the response message
                 msg = self.__accepted_login_response(ip, protocol)
 
                 # Send the response
                 if protocol == VPNProtocol.UDP:
-                    # Todo: change to the correct socket
+                    
                     response_socket = MySocket(VPNProtocol.UDP)
-                    response_socket.bind(('localhost',0))##
-                    #response_socket.connect(client_address)
+                    response_socket.bind(('localhost',0))
                     self.__socket_manager.add_socket(response_socket, client_address)
                     response_socket.send(msg.encode(),client_address)
-                    print("En el login header")
-                    print(msg)
-                    print(client_address)
+                    
                 else:
                     self.__socket_manager.get_socket_by_name(client_address).send(
                         msg.encode()
@@ -97,16 +95,18 @@ class MyVPN:
             ip_server = data[1]
             port_server = int(data[2])
 
+            username=self.__users_manager.get_user_by_address(client_address)
+
             # Todo: Specify who broke the access, the usr or the vlan
-            if not self.__user_can_connect_to_ip(
-                data[1], ip_server
-            ) or not self.__vlan_can_connect_to_ip(data[1], ip_server):
-                # Todo: Put it on log
-                # Enviar mensaje de error por restricción
-                msg = "You are not allowed to access this server"
-                data = (REQUEST_ERROR_HEADER, msg)
-                self.__process_data(data, protocol, client_address)
-                return
+            # if not self.__user_can_connect_to_ip(
+            #     username, ip_server
+            # ) or not self.__vlan_can_connect_to_ip(username, ip_server):
+            #     # Todo: Put it on log
+            #     # Enviar mensaje de error por restricción
+            #     msg = "You are not allowed to access this server"
+            #     data = (REQUEST_ERROR_HEADER, msg)
+            #     self.__process_data(data, protocol, client_address)
+            #     return
 
             # Get the data to send
             data_to_send = data[3]
@@ -123,10 +123,7 @@ class MyVPN:
                 temp_socket.send(data_to_send.encode())
             adr = temp_socket.getsockname() ####?
             self.__socket_manager.add_socket(temp_socket, client_address)
-            # if protocol == VPNProtocol.UDP:
-            #     temp_socket = MySocket(VPNProtocol.UDP)
-            #     temp_socket.bind(adr)
-            # Receive the response from the server
+            
             response = temp_socket.recv(1024)
             if protocol == VPNProtocol.UDP:
                 response = response[0]
@@ -139,11 +136,9 @@ class MyVPN:
 
             # Send the response to the client
             if(protocol==VPNProtocol.UDP):
-                print("enviando")
-                print(client_address)
                 socket=MySocket(VPNProtocol.UDP)
                 socket.bind(("localhost",0))
-                socket.send(msg,('127.0.0.2',0))#####
+                socket.send(msg,('127.0.0.2',0))
             else:
                 self.__socket_manager.get_socket_by_name(client_address).send(msg)
 
@@ -278,12 +273,9 @@ class MyVPN:
     def __udp_client_process(self, data, client_address):
         "This method is the main process of the client, it will be running until the client is disconnected"
         data=data.encode()
-        print(data)
         # Receive the data
         decoded_data = self.__decode_data(data)
-        print("en el udp process")
-        print(decoded_data)
-        print(client_address)
+    
         # Process the data
         self.__process_data(decoded_data, VPNProtocol.UDP, client_address)
 
@@ -293,16 +285,11 @@ class MyVPN:
     def __decode_data(self, data):
         "This method decode the data received from the client"
 
-        print("separator")
-
-        print(data)
 
         try:
             data=data.decode()
         except:
             pass
-
-        print(data)
             
         split_data = data.split(REQUEST_SEPARATOR)
 
@@ -313,8 +300,7 @@ class MyVPN:
         if split_data[0] == REQUEST_LOGIN_HEADER:
             usr = split_data[1]
             pwd = split_data[2]
-            # print(usr)
-            # print(pwd)
+            
             return (REQUEST_LOGIN_HEADER, usr, pwd)
 
         # Get normal request
@@ -554,6 +540,7 @@ class MyVPN:
 
     def __user_can_connect_to_ip(self, username, ip_to_connect):
         "Determines if a user can connect to a given IP"
+        print(username)
         user_id = select_id_for_username(username)
         restricted_ips = select_iprange_by_user(user_id)
 

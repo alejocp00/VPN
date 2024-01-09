@@ -76,6 +76,13 @@ class Server(metaclass=ABCMeta):
         result = self._server_function(data, client_socket, client_address)
         msg = self._result_msg(result)
         # Send the data to the client
+
+        try:
+            msg=str(msg)
+            client_address=int(client_address[1])
+        except:
+            pass
+
         client_socket.send(msg.encode(),client_address)
 
         # Close the connection
@@ -124,7 +131,6 @@ class Server(metaclass=ABCMeta):
         """Create the server socket."""
         self.__socket_tcp = MySocket(VPNProtocol.TCP)
         self.__socket_udp = MySocket(VPNProtocol.UDP)
-        #self.__socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def _stop_server(self):
         """Stop the server."""

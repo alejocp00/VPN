@@ -85,11 +85,7 @@ class MyUDP:
     def udp_send(self, data, dest_addr):
         # Generate pseudo header
         src_ip, dest_ip = self.ip2int(self.src_addr[0]), self.ip2int(dest_addr[0])
-        print("scr_ip")
-        print(src_ip)
-    
-        print("dest_ip")
-        print(dest_ip)
+        
         src_ip = struct.pack("!4B", *src_ip)
         dest_ip = struct.pack("!4B", *dest_ip)
 
@@ -208,16 +204,14 @@ class MyUDP:
         self.udp_send(data.encode(), dest_addr)
 
     def send(self, message, dest_addr):
-        print(dest_addr)
-        print(message)
         try:
             message=message.decode()
         except:
             pass
         
         message = "*msg*" + message
-        print(message)
-        self.udp_send(message.encode(), dest_addr)#message.encode()
+        
+        self.udp_send(message.encode(), dest_addr)
 
     def recv(self, buffer_size):
         data, addr = self.udp_recv(buffer_size)
@@ -233,7 +227,6 @@ class MyUDP:
                 file_name += data[i]
                 i += 1
 
-            # print(file_name)
 
             data = data[i + 1 :]
 
@@ -241,7 +234,7 @@ class MyUDP:
 
             three_levels_up_dir = os.path.abspath(
                 os.path.join(current_dir, "..", "..", "..")
-            )  ####
+            )  
 
             receive_dir = os.path.join(three_levels_up_dir, "RECEIVE")
             if not os.path.exists(receive_dir):

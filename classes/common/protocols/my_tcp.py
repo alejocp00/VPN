@@ -25,7 +25,7 @@ class MyTCP:
     def close(self):
         self.socket.close()
 
-    def connect(self, address: tuple[int, int]):
+    def connect(self, address):
         self.socket.connect(address)
 
     def getsockname(self):

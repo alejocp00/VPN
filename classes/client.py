@@ -40,6 +40,7 @@ class Client(metaclass=ABCMeta):
         if self._config["protocol"] == VPNProtocol.UDP:
             self.__socket.bind(('127.0.0.2',0))
         else:
+            self.__socket.bind(('127.0.0.2',17))
             self.__socket.connect((self._config["server_ip"], self._config["server_port"]))
 
     def __perform_first_connection(self):
@@ -74,9 +75,9 @@ class Client(metaclass=ABCMeta):
         if using_udp:
             response_message = response_message[0]
             response_message=response_message.encode()
-        print(response_message)
+        
         response_message = response_message.decode()
-        print("Recibido")
+        
         # Process the response
         self.__set_configuration(response_message)
 
@@ -148,9 +149,9 @@ class Client(metaclass=ABCMeta):
         adr = self.__socket.getsockname()
         self.__socket = MySocket(VPNProtocol.UDP)
         self.__socket.bind(adr)
-        print("respuesta")
-        resp=self.__socket.recv(1024)[0]#.decode()  if udp
-        print(resp)
+        
+        resp=self.__socket.recv(1024)[0]
+        
         return self.decode_data(resp)
 
     def decode_data(self, data: str):
